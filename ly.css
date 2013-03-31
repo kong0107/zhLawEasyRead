@@ -1,0 +1,35 @@
+ol {
+  margin: 0;
+}
+
+.singlePara {
+  list-style-type: disc;
+  padding-left: 1.5em;
+}
+
+.paraList {
+  list-style-type: upper-roman;
+  padding-left: 1.5em;
+}
+
+.catList {
+  padding-left: 4em;
+  text-indent: -4em;
+}
+
+.subsecList {
+  list-style-type: none;
+  padding-left: 2em;
+  text-indent: -2em;
+}
+
+.itemList {
+  list-style-type: none;
+  padding-left: 1.7em;
+  text-indent: -1.7em;
+}
+
+li {
+  line-height: 150%;
+  padding: 0.25em 0;
+}

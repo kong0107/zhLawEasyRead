@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title>Popup</title>
+    <base target="_blank" />
+    <style>
+      body {
+        min-width: 300px;
+      }
+      iframe {
+        display: block;
+        border: 0;
+        height: 2em;
+      }
+    </style>
+    <!-- JavaScript and HTML must be in separate files for security. -->
+    <script src="popup.js"></script>
+  </head>
+  <body>
+    <ul>
+      <li>
+        <a href='http://law.moj.gov.tw/'>[法務部]全國法規資料庫</a>
+        <form method="get" action="http://law.moj.gov.tw/Law/LawSearchResult.aspx">
+          <input type="text" name="k1" />
+          <input type="hidden" name="p" value="A" />
+          <input type="hidden" name="t" value="E1F1A1A2" />
+          <input type="submit" value="搜尋法規" />
+        </form>
+      </li>
+      <li><a href='http://jirs.judicial.gov.tw/'>[司法院]法學資料檢索</a></li>
+      <li>
+        <a href='http://www.judicial.gov.tw/constitutionalcourt/p03.asp'>[司法院]大法官解釋</a>
+        <form method="get" action="http://www.judicial.gov.tw/constitutionalcourt/p03_01.asp">
+          釋字第<input type="text" name="expno" size="4" />號
+          <input type="submit" value="前往" />
+        </form>
+      </li>
+      <li>
+        <a href='http://lis.ly.gov.tw/lgcgi/lglaw'>[立法院]法律系統</a>
+        <!--iframe src="./popup_big5ForLy.html"></iframe-->
+      </li>
+      <li><a href='http://npl.ly.gov.tw/do/www/lawTrack'>[立法院]法案追蹤</a></li>
+      <li><a href='http://www.president.gov.tw/Default.aspx?tabid=84'>[總統府]公報</a></li>
+    </ul>
+  </body>
+</html>
