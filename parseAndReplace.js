@@ -88,7 +88,7 @@ replaceRules = [
             break;
           case '頁':
             if(result.length) result += ', ';
-            result += 'p.' + num;
+            result += 'p. ' + num;
             break;
         }
         num = match[2] || match[4];
