@@ -18,19 +18,19 @@ Google瀏覽器外掛，可於瀏覽政府網站時：
 
 # 安裝
 Google說「需支付一次性的開發人員註冊費 US$5.00」，所以（還）沒有放在「Chrome 線上應用程式商店」。
-1. 按上方的ZIP下載本專案的打包檔，並解壓縮到某處。
-2. 進入Chrome的[擴充功能](chrome://extensions/)設定，勾選右上角的「開發人員模式」。
-3. 點選剛剛冒出來的「載入未封裝擴充功能」按鈕。
-4. 選取剛剛解壓縮的目的地。
-5. 網址列右邊出現「§#」的圖示話就是成功了，可以按看看。
+* 按上方的ZIP下載本專案的打包檔，並解壓縮到某處。
+* 進入Chrome的[擴充功能](chrome://extensions/)設定，勾選右上角的「開發人員模式」。
+* 點選剛剛冒出來的「載入未封裝擴充功能」按鈕。
+* 選取剛剛解壓縮的目的地。
+* 網址列右邊出現「§#」的圖示話就是成功了，可以按看看。
 
 # 外觀細節
 * 為避免出現「漩渦鳴人的 §8 尾巴出現了」這種情況，僅限定 `*.gov.tw` 和 [法源法律網](http://www.lawbank.com.tw/‎)的網頁會轉換。
-    *若需要針對其他網域，請編輯`manifest.json`內的最後一個`matches`，然後再於Chrome的[擴充功能](chrome://extensions/ )中「重新載入」。
+    * 若需要針對其他網域，請編輯`manifest.json`內的最後一個`matches`，然後再於Chrome的[擴充功能](chrome://extensions/ )中「重新載入」。
 * 將滑鼠移置被轉換後的文字，即會顯示原本的文字。但如為可編輯之純文字框，如 TEXTAREA ，即無此效果。
 * 憲法與大法官釋字會加上連結－－除非原本已經是連結。
 * 為方便複製至純文字編輯器如「記事本」，羅馬數字以英文字母組合而不以內碼表的符號顯示。「款」的圈圈數字亦同。
-    *註：大陸地區與聯合國文件中，「項」與「款」的順序與台灣地區相反，但本外掛沒有考量此部分。
+    * 註：大陸地區與聯合國文件中，「項」與「款」的順序與台灣地區相反，但本外掛沒有考量此部分。
 
 # 待解
 * 未確認與Chrome 18版以後的支援度。
@@ -44,32 +44,34 @@ Google說「需支付一次性的開發人員註冊費 US$5.00」，所以（還
 
 ## 最初構想
 原本是以字串取代的方式去改變document.body.innerHTML（之前的0.1.8版即是如此），但發現有三個難處：
-1. 有（類似）onLoad function的網頁（如「全國法規資料庫」的首頁）即會無後續動作。
-2. 不知道要怎麼樣避開HTML tag的屬性中的字串（如各釋字專頁），特別是要提防屬性字串中又包含特殊字元的情形。
-3. 不知道怎麼偵測「是否已在<a />中」，困境同上。
+* 有（類似）onLoad function的網頁（如「全國法規資料庫」的首頁）即會無後續動作。
+* 不知道要怎麼樣避開HTML tag的屬性中的字串（如各釋字專頁），特別是要提防屬性字串中又包含特殊字元的情形。
+* 不知道怎麼偵測「是否已在<a />中」，困境同上。
 
 ## 目前架構
 用遞迴方式跑過整個HTML的DOM tree，抓出textNode來處理。
 因此，勢必得用document.createElement和appendChild等DOM方法，而不能修改innerHTML。
 
 核心演算法寫於 parseAndReplace.js 
-### function `parser`(`node`, `inSpecial`)
-`inSpecial`記載「是否為`TEXTAREA`、`A`或其他特殊元素或其後代」。
-如果`node`是`ELEMENT_NODE`，那就把每個 childNode 也都丟進`parser()`遞迴；
-如果`node`是`TEXT_NODE`，那就將該字串丟給`replacer`，並把原本的 node 用回傳的 nodeList （其實是陣列）取代。
 
-對於 onLoad 後不會再變動的網頁，僅需`parser(document.body);`即可處理全部。
+### function `parser`(`node`, `inSpecial`)
+* `inSpecial`記載「是否為`TEXTAREA`、`A`或其他特殊元素或其後代」。
+* 如果`node`是`ELEMENT_NODE`，那就把每個 childNode 也都丟進`parser()`遞迴；
+* 如果`node`是`TEXT_NODE`，那就將該字串丟給`replacer`，並把原本的 node 用回傳的 nodeList （其實是陣列）取代。
+* 對於 onLoad 後不會再變動的網頁，僅需`parser(document.body);`即可處理全部。
 
 ### function `replacer`(`textNode`, `inSpecial`)
 輸入為文字節點；輸出為節點陣列。
-1. 用第一個替換規則將字串分割。
+
+#### 步驟
+* 用第一個替換規則將字串分割。
     * 將符合的字串處理為格式化的node，並存至陣列`formattedMatches`
     * 將其他部分記於另一個陣列`pureTexts`
-2. 對每一個`pureTexts`中的元素，以第二個替換規則重複步驟1，並將結果「插入」前述二陣列中。
-3. 對每一個`pureTexts`中的元素，以第三個替換規則重複前述步驟。依此類推。
-4. 當所有替換規則均已執行完畢，則將`pureTexts`與`formattedMatches`相互穿插後，回傳結果陣列。
+* 對每一個`pureTexts`中的元素，以第二個替換規則重複步驟1，並將結果「插入」前述二陣列中。
+* 對每一個`pureTexts`中的元素，以第三個替換規則重複前述步驟。依此類推。
+* 當所有替換規則均已執行完畢，則將`pureTexts`與`formattedMatches`相互穿插後，回傳結果陣列。
 
-#### 例子：
+#### 例子
 * Input: "社會秩序維護法第八十條第一項第一款…與憲法第七條之平等原則有違"
 * Initialization:
     * `pureTexts = ["社會秩序維護法第八十條第一項第一款…與憲法第七條之平等原則有違"];`
