@@ -1,4 +1,4 @@
-# 簡介
+# Introduction
 An extension for Chrome browser to view Taiwan's law articles/websites easier,
 related with [g0v/laweasyread](https://github.com/g0v/laweasyread) but functions differently and not combined together yet.
 
@@ -12,11 +12,11 @@ Google瀏覽器外掛，可於瀏覽政府網站時：
     * [立法院法律系統](http://lis.ly.gov.tw/lgcgi/lglaw)
     * [司法院裁判書查詢](http://jirs.judicial.gov.tw/FJUD/)
 
-## 範例截圖
+## Example
 ![Example](http://images.plurk.com/c27a95275c55a8ccc4f8e39704df1875.jpg)
 
 
-# 安裝
+# Installation
 Google說「需支付一次性的開發人員註冊費 US$5.00」，所以（還）沒有放在「Chrome 線上應用程式商店」。
 * 按上方的ZIP下載本專案的打包檔，並解壓縮到某處。
 * 進入Chrome的[擴充功能](chrome://extensions/)設定，勾選右上角的「開發人員模式」。
@@ -24,31 +24,32 @@ Google說「需支付一次性的開發人員註冊費 US$5.00」，所以（還
 * 選取剛剛解壓縮的目的地。
 * 網址列右邊出現「§#」的圖示話就是成功了，可以按看看。
 
-# 外觀細節
+# Notices
 * 為避免出現「漩渦鳴人的 §8 尾巴出現了」這種情況，僅限定 `*.gov.tw` 和 [法源法律網](http://www.lawbank.com.tw/‎)的網頁會轉換。
     * 若需要針對其他網域，請編輯`manifest.json`內的最後一個`matches`，然後再於Chrome的[擴充功能](chrome://extensions/ )中「重新載入」。
 * 將滑鼠移置被轉換後的文字，即會顯示原本的文字。但如為可編輯之純文字框，如 TEXTAREA ，即無此效果。
-* 憲法與大法官釋字會加上連結－－除非原本已經是連結。
+* 大法官釋字以及「名稱不超過八個字」的法規會加上連結－－除非原本已經是連結。
 * 為方便複製至純文字編輯器如「記事本」，羅馬數字以英文字母組合而不以內碼表的符號顯示。「款」的圈圈數字亦同。
     * 註：大陸地區與聯合國文件中，「項」與「款」的順序與台灣地區相反，但本外掛沒有考量此部分。
 
-# 待解
+# Bugs
 * 未確認與Chrome 18版以後的支援度。
 * 未能運作於[評律網](http://www.pingluweb.com/)等以AJAX機制更新的內容。
-* 數個釋字或憲法條文並列時，僅有第一個會被轉換為連結。
+* 數個釋字並列時，僅有第一個會被轉換為連結。
 * 以換行字元強制換行的排版網頁（如[全國法規資料庫](http://law.moj.gov.tw/)及[司法院裁判書查詢](http://jirs.judicial.gov.tw/FJUD/)）中，可能會將數行併成過長的一行。
 * 一個法規（而非一個條文）若有分章節款目，其中「款」與「目」亦會被轉換。
 * 以 BR 強制換行的字串尚不會被偵測到。
+* 嘗試轉換太多法規名稱的話，會耗掉太多時間。
 
-# 開發
+# Development
 
-## 最初構想
+## First Idea
 原本是以字串取代的方式去改變document.body.innerHTML（之前的0.1.8版即是如此），但發現有三個難處：
 * 有（類似）onLoad function的網頁（如「全國法規資料庫」的首頁）即會無後續動作。
 * 不知道要怎麼樣避開HTML tag的屬性中的字串（如各釋字專頁），特別是要提防屬性字串中又包含特殊字元的情形。
 * 不知道怎麼偵測「是否已在<a />中」，困境同上。
 
-## 目前架構
+## Current Scheme
 用遞迴方式跑過整個HTML的DOM tree，抓出textNode來處理。
 因此，勢必得用document.createElement和appendChild等DOM方法，而不能修改innerHTML。
 
@@ -63,7 +64,7 @@ Google說「需支付一次性的開發人員註冊費 US$5.00」，所以（還
 ### function `replacer`(`textNode`, `inSpecial`)
 輸入為文字節點；輸出為節點陣列。
 
-#### 步驟
+#### Steps
 * 用第一個替換規則將字串分割。
     * 將符合的字串處理為格式化的node，並存至陣列`formattedMatches`
     * 將其他部分記於另一個陣列`pureTexts`
@@ -71,7 +72,7 @@ Google說「需支付一次性的開發人員註冊費 US$5.00」，所以（還
 * 對每一個`pureTexts`中的元素，以第三個替換規則重複前述步驟。依此類推。
 * 當所有替換規則均已執行完畢，則將`pureTexts`與`formattedMatches`相互穿插後，回傳結果陣列。
 
-#### 例子
+#### Example
 * Input: "社會秩序維護法第八十條第一項第一款…與憲法第七條之平等原則有違"
 * Initialization:
     * `pureTexts = ["社會秩序維護法第八十條第一項第一款…與憲法第七條之平等原則有違"];`
@@ -89,7 +90,5 @@ Google說「需支付一次性的開發人員註冊費 US$5.00」，所以（還
     ];`
 
 
-## 短期目標
-
-如果網頁中出現[全國法規資料庫](http://law.moj.gov.tw/)有收錄的法規，即將法律名稱替換為直接連向[全國法規資料庫](http://law.moj.gov.tw/)的該法規專頁。
-應會利用g0v/laweasyread-data的[data/pcode.json](https://github.com/g0v/laweasyread-data/blob/master/data/pcode.json)。
+## Short-term Target
+優化或改用其他演算法，讓超過萬種可能的法規名稱均能順利代換。
