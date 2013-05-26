@@ -9,9 +9,86 @@
     7. 自動斷行的處理
 */
 
-replaceRules = [
-  {
-    "description": "憲法（錯誤：「英國憲法」跟「日本憲法」也會被轉換）",
+RDict = {
+    data: [],
+    getRInfoByName: function (str) {
+        if(typeof this.data[str.length] == "undefined") return null;
+        for(var i in this.data[str.length]) {
+            if(i == str) return this.data[str.length][i];
+        }
+        return null;
+    },
+    join: function(glue) {
+        if(typeof glue == 'undefined') glue = '|';
+        var strArr = new Array;
+        for(var i = this.data.length - 1; i > 0; --i) {
+            if(typeof this.data[i] == 'undefined') continue;
+            for(name in this.data[i]) strArr.push(name);
+        }        
+        //alert(strArr.length);
+        return strArr.join(glue);
+    }
+};
+
+for(var i = 0; i < pcodes.length; ++i) {
+    var pcode = pcodes[i].PCode;
+    var name = pcodes[i].name;
+    if(name.length > 8) continue;
+    if(typeof RDict.data[name.length] == "undefined")
+        RDict.data[name.length] = new Object;
+    RDict.data[name.length][name] = new Object;
+    RDict.data[name.length][name]['pcode'] = pcode;
+}
+delete pcodes;
+
+for(var alias in aliases) {
+    var fullName = aliases[alias];
+    RDict.data[alias.length][alias] = RDict.data[fullName.length][fullName];
+    RDict.data[fullName.length][fullName].alias = alias;
+}
+delete aliases;
+
+replaceRules = new Array;
+
+
+/// 把所有法規名稱串成一個規則，似乎會太長，且勢必需要regEx
+/*replaceRules.push({
+    splitter: RDict.join(), ///< seems to be too long....
+    splitterNeedSpace: false,
+    replacer: function(text) {
+        var obj = RDict.getRInfoByName(text);
+        return {
+            origin: text,
+            reduced: (typeof obj.alias == 'undefined') ? text : obj.alias,
+            link: 'http://law.moj.gov.tw/LawClass/LawAll.aspx?PCode=' + obj.pcode
+        };
+    }
+});*/
+
+/// 把每個法規名稱都變成一個規則，可以不用regEx
+for(var i = RDict.data.length - 1; i > 1; --i) {
+    var obj = RDict.data[i];
+    for(var j in obj) {
+        //regStr = j.replace(/\./g, '\.');
+        //regStr = j.replace(/\(/g, '\(').replace(/\)/g, '\)');
+        replaceRules.push({
+            splitter: j,
+            splitterNeedSpace: false,
+            minLength: j.length,
+            replacer: function(text) {
+                var obj = RDict.getRInfoByName(text);
+                return {
+                    origin: text,
+                    reduced: (typeof obj.alias == "undefined") ? text : obj.alias,
+                    link: 'http://law.moj.gov.tw/LawClass/LawAll.aspx?PCode=' + obj.pcode
+                };
+            }
+        });
+    }
+}
+
+/*replaceRules.push({
+    /// 憲法 ///< 所有法律都套進去的話就不用這個了
     "splitter": "((我|中華民)國)?憲法第\\d+條",
     "splitterNeedSpace": true,
     "replacer": function(text) {
@@ -22,9 +99,9 @@ replaceRules = [
         "link": "http://law.moj.gov.tw/LawClass/LawSingle.aspx?Pcode=A0000001&FLNO=" + num
       };
     },
-  },
-  {
-    "description": "大法官解釋",
+});*/
+replaceRules.push({
+    /// 大法官解釋
     "splitter": "(司法院|本院)?釋字?第?\\d+號(解釋(?!文))?",
     "splitterNeedSpace": true,
     "replacer": function(text) {
@@ -35,9 +112,9 @@ replaceRules = [
         "link": "http://www.judicial.gov.tw/constitutionalcourt/p03_01.asp?expno=" + jyi
       };
     }
-  },
-  {
-    "description": "第幾號",
+});
+replaceRules.push({
+    /// 第幾號
     "splitter": "第\\d+號",
     "splitterNeedSpace": false,
     "replacer": function(text) {
@@ -46,9 +123,9 @@ replaceRules = [
         "reduced": "#" + chNum2int(text),
       };
     }
-  },
-  {
-    "description": "條號",
+});
+replaceRules.push({
+    /// 條號
     "splitter": "(第\\d+(之\\d+)?[條項款目號卷期頁][　\\s]*(之\\d+)?)+",
     "replacer": function(text) {
       var match, num, result = '';
@@ -99,9 +176,9 @@ replaceRules = [
         "reduced": result
       };
     }
-  },
-  {
-    "description": "日期",
+});
+replaceRules.push({
+    /// 日期
     "splitter": "(((中華)?民國|西元)?\\d+年)?\\d+月\\d+日",
     "splitterNeedSpace": true,
     "replacer": function(text) {
@@ -114,9 +191,9 @@ replaceRules = [
         "reduced": parts.join('.'),
       };
     }
-  },
-  {
-    "description": "年月",
+});
+replaceRules.push({
+    /// 年月
     "splitter": "((中華)?民國|西元)?\\d+年(\\d+月)?",
     "splitterNeedSpace": true,
     "replacer": function(text) {
@@ -129,9 +206,9 @@ replaceRules = [
         "reduced": result
       };
     }
-  },
-  {
-    "description": "時間",
+});
+replaceRules.push({
+    /// 時間
     "splitter": "(上午|下午|凌晨|傍晚|清晨)?[　\\s]*(\\d+[時分秒]){2,3}",
     "splitterNeedSpace": false,
     "replacer": function(text) {
@@ -145,9 +222,9 @@ replaceRules = [
         "reduced": ' ' + parts.join(':'),
       };
     }
-  },
-  {
-    "description": "法院名稱",
+});
+replaceRules.push({
+    /// 法院名稱
     "splitter": "(臺灣|台灣|福建)?([^\s]{2}地方|高等)法院(檢察署)?",
     "splitterNeedSpace": true,
     "replacer": function(text) {
@@ -161,10 +238,10 @@ replaceRules = [
         "reduced": result
       };
     }
-  }
-];
+});
 
 for(i = 0; i < replaceRules.length; i++) {
+  if(typeof replaceRules[i].minLength != 'undefined') continue;
   str = replaceRules[i].splitter;
   // Add space before each chinese word, BUT 在方括號裡就爆炸了啦 QQ
   if(replaceRules[i].splitterNeedSpace)
@@ -175,6 +252,7 @@ for(i = 0; i < replaceRules.length; i++) {
   str = str.replace(/\((?![?])/g, '(?:');
   replaceRules[i].splitter = new RegExp(str, 'g');
 }
+
 
 parser(document.body);
 
@@ -211,8 +289,9 @@ function replacer(textNode, inSpecial) {
   var i, j, k, splitted, matches;
   for(i = 0; i < replaceRules.length; i++) {
     var regex = replaceRules[i].splitter;
+    var minLength = (typeof replaceRules[i].minLength == 'undefined') ? 3 : replaceRules[i].minLength;
     for(j = 0; j < pureTexts.length; j++) {
-      if(pureTexts[j].replace(/[\x00-\x7F]/g, '').length < 3) continue;
+      if(pureTexts[j].replace(/[\x00-\x7F]/g, '').length < minLength) continue;
       splitted = pureTexts[j].split(replaceRules[i].splitter);
       if(splitted.length == 1) continue; // This means there's no match.
       matches = pureTexts[j].match(replaceRules[i].splitter);
@@ -230,11 +309,12 @@ function replacer(textNode, inSpecial) {
   for(text = pureTexts.shift(); pureTexts.length; text = pureTexts.shift()) {
     if(text.length) result.push(document.createTextNode(text));
     info = formattedMatches.shift();
+    if(typeof info == 'undefined') continue; ///< Why!? There wasn't any problem without this before version 0.2.7.
 
     if(inSpecial == 'TEXTAREA')
       node = document.createTextNode(info.reduced);
     else {
-      if(inSpecial == 'A' || !info.link)
+      if(inSpecial == 'A'  || !info.link)
         node = document.createElement('SPAN');
       else {
         node = document.createElement('A');
