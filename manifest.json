@@ -1,7 +1,7 @@
 {
   "name": "zhLawEasyRead",
   "manifest_version": 2,
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "Replace chinese words of sequence number of law articles into arabic or roman numerals.",
   "permissions": [
   ],
@@ -30,6 +30,9 @@
         "*://*.gov.tw/*",
         "*://*.lawbank.com.tw/*",
         "file:///*"
+      ],
+      "exclude_matches": [
+        "http://law.moj.gov.tw/Eng/*"
       ],
       "css": ["main.css"],
       "js": [
