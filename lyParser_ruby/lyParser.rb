@@ -1,7 +1,10 @@
 # encoding: UTF-8
 def parse_version2(html)
-    puts lyID = html.match(/<title>法編號:(\d{5})/)[1]
-    puts date = (html.match(/版本:(\d{7})00<\/title>/)[1].to_i + 19110000).to_s
+    lyID = html.match(/<title>法編號:(\d{5})/)[1]
+    html.match(/版本:(\d{7})(\d{2})<\/title>/)
+    puts date = ($1.to_i + 19110000).to_s
+    version = $2.to_i
+    #puts date = (html.match(/版本:(\d{7})00<\/title>/)[1].to_i + 19110000).to_s
     puts name = html.match(/<FONT COLOR=blue SIZE=5>(.*)\(\d{5}\)/)[1]
     
     dates = []
@@ -11,7 +14,7 @@ def parse_version2(html)
     
     divisions = []
     html.gsub(/<table><tr><td>&nbsp;&nbsp;&nbsp;<\/td>\n<td><font color=4000ff size=4>(第([一二三四五六七八九十]+)([編章節款目])(之[一二三四五六七八九十]+)?)  ([^<]+)<\/font>/) do
-        puts num = $2.to_i * 100 + $4.to_i
+        num = $2.to_i * 100 + $4.to_i
         divisions.push({:offset=>$~.begin(0), :type=>$3, :num=>num, :title=>$5})
     end
 
@@ -26,6 +29,7 @@ def parse_version2(html)
     return {
         :lyID => lyID,
         :date => date,
+        :version => version,
         :name => name,
         :dates => dates,
         :divisions => divisions,
