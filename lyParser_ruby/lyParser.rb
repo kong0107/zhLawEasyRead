@@ -1,5 +1,13 @@
 # encoding: UTF-8
 def parse_version2(html)
+    if html.match(/HTTP Error 404/) ||html.match(/404 Not Found/) then 
+# find . -name "*.html" -exec grep -H "Error 404" {} \;
+# find . -name "*.html" -exec grep -H "404 Not Found" {} \;
+# ref: http://falldog7.blogspot.tw/2008/01/linux.html
+        puts "No contents"
+        if defined?($errLogger) then $errLogger.write($fileName + " no contents\n") end
+        return {} 
+    end
     lyID = html.match(/<title>法編號:(\d{5})/)[1]
     html.match(/版本:(\d{7})(\d{2})<\/title>/)
     puts date = ($1.to_i + 19110000).to_s
@@ -20,10 +28,12 @@ def parse_version2(html)
 
     articles = []
     html.gsub(/<table><tr><td>&nbsp;&nbsp;&nbsp;<\/td><td>(<font color=8000ff>(第([零一二三四五六七八九十百千]+)條(之[一二三四五六七八九十]+)?)<\/font>)?\n(&nbsp;&nbsp;<font size=2>\(([^\)]*)\))?<\/font>\n<table><tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<\/td>\n<td>\n(([^<]+<br>\n)+)<\/td>/) do
+        offset = $~.begin(0)
+        title = $6
         num2 = $4.to_s
         num = $3.to_i * 100 + num2.slice(1, num2.to_s.length-1).to_i
         content = $7.gsub /(^|<br>(\n))(　*)/, '\2'
-        articles.push({:offset=>$~.begin(0), :num=>num, :title=>$6, :content=>content})
+        articles.push({:offset=>offset, :num=>num, :title=>title, :content=>content.rstrip})
     end
     
     return {
