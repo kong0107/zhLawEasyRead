@@ -1,12 +1,13 @@
 /*
   Bugs:
-    1. 編章節款目
+    * 編章節款目
+    * 行政訴訟法§96 III: 「第四十四條之『參加人』」會變成「§44-3加人」
   To-do list:
-    2. 判決書連結－－至少先做台上字/(最高法?院)?%NUMBER%年?台([上抗])字第%NUMBER%號(刑事|民事)?(裁定|判決|判例)?/
-    4. 預覽
-    5. 連續的釋字或條文: "迭經本院釋字第四三二號、第五二一號、第五九四號及第六０二號解釋闡釋在案"
-    6. 跳脫／不轉換的class（如className "noReduce"）
-    7. 自動斷行的處理
+    * 判決書連結－－至少先做台上字/(最高法?院)?%NUMBER%年?台([上抗])字第%NUMBER%號(刑事|民事)?(裁定|判決|判例)?/
+    * 預覽
+    * 連續的釋字或條文: "迭經本院釋字第四三二號、第五二一號、第五九四號及第六０二號解釋闡釋在案"
+    * 跳脫／不轉換的class（如className "noReduce"）
+    * 自動斷行的處理
 */
 
 RDict = {
@@ -33,7 +34,8 @@ RDict = {
 for(var i = 0; i < pcodes.length; ++i) {
     var pcode = pcodes[i].PCode;
     var name = pcodes[i].name;
-    if(name.length > 8) continue;
+    if(name.length > 64) continue; /// 超過得也不會通過下一關，不過這邊或許可以省些時間？
+    if(/[\w\s\(\)（）「」，、：　]/.test(name)) continue;
     if(typeof RDict.data[name.length] == "undefined")
         RDict.data[name.length] = new Object;
     RDict.data[name.length][name] = new Object;
@@ -52,7 +54,7 @@ replaceRules = new Array;
 
 
 /// 把所有法規名稱串成一個規則，似乎會太長，且勢必需要regEx
-/*replaceRules.push({
+replaceRules.push({
     splitter: RDict.join(), ///< seems to be too long....
     splitterNeedSpace: false,
     replacer: function(text) {
@@ -63,10 +65,10 @@ replaceRules = new Array;
             link: 'http://law.moj.gov.tw/LawClass/LawAll.aspx?PCode=' + obj.pcode
         };
     }
-});*/
+});
 
 /// 把每個法規名稱都變成一個規則，可以不用regEx
-for(var i = RDict.data.length - 1; i > 1; --i) {
+/*for(var i = RDict.data.length - 1; i > 1; --i) {
     var obj = RDict.data[i];
     for(var j in obj) {
         //regStr = j.replace(/\./g, '\.');
@@ -85,7 +87,7 @@ for(var i = RDict.data.length - 1; i > 1; --i) {
             }
         });
     }
-}
+}*/
 
 /*replaceRules.push({
     /// 憲法 ///< 所有法律都套進去的話就不用這個了
