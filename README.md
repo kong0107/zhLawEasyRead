@@ -12,20 +12,22 @@ Google瀏覽器外掛，可於瀏覽政府網站時：
     * [立法院法律系統](http://lis.ly.gov.tw/lgcgi/lglaw)
     * [司法院裁判書查詢](http://jirs.judicial.gov.tw/FJUD/)
 
-## Example
-![Example](http://images.plurk.com/c27a95275c55a8ccc4f8e39704df1875.jpg)
+## Examples
+![Legislative Yuan](http://images.plurk.com/c27a95275c55a8ccc4f8e39704df1875.jpg)
+![Judicial Interpretation](http://images.plurk.com/kAGZ-16lLevTTpEXtHornsBqrXY.jpg)
 
 
 # Installation
-Google說「需支付一次性的開發人員註冊費 US$5.00」，所以（還）沒有放在「Chrome 線上應用程式商店」。
-* 按上方的ZIP下載本專案的打包檔，並解壓縮到某處。
-* 進入Chrome的[擴充功能] chrome://extensions/ 設定，勾選右上角的「開發人員模式」。
+* 按網頁左上方的"ZIP"下載本專案的打包檔，並解壓縮到任意處。
+* 進入Chrome的「擴充功能」設定頁面（網址輸入 chrome://extensions/ ），勾選右上角的「開發人員模式」。
 * 點選剛剛冒出來的「載入未封裝擴充功能」按鈕。
-* 選取剛剛解壓縮的目的地。
-* 網址列右邊出現「§#」的圖示話就是成功了，可以按看看。
+* 選取剛剛解壓縮出來的資料夾。
+* 網址列右邊出現「§#」圖示的話就是成功了，可以按看看。
+* 解壓縮出來的資料夾與檔案不要刪掉。
 
 # Notices
-* 為避免出現「漩渦鳴人的 §8 尾巴出現了」這種情況，僅限定 `*.gov.tw` 和 [法源法律網](http://www.lawbank.com.tw/‎)的網頁會轉換。
+* Google說「需支付一次性的開發人員註冊費 US$5.00」，所以（還）沒有放在「Chrome 線上應用程式商店」。
+* 為避免出現「漩渦鳴人的 §8 尾巴出現了」這種情況，僅限定政府網站（`*.gov.tw`）和 [法源法律網](http://www.lawbank.com.tw/‎)的網頁會轉換。
     * 若需要針對其他網域，請編輯`manifest.json`內的最後一個`matches`，然後再於Chrome的[擴充功能]chrome://extensions/ 中「重新載入」。
 * 將滑鼠移置被轉換後的文字，即會顯示原本的文字。但如為可編輯之純文字框，如 TEXTAREA ，即無此效果。
 * 大法官釋字以及全國法規資料庫有收錄的均會加上連結－－除非原本已經是連結。
