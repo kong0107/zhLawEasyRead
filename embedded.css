@@ -1,0 +1,15 @@
+.LER_lawName {
+  padding: 0.2em;
+  border: 1px solid #ccc;
+  background-color: #000;
+  color: yellow;
+  text-decoration: none;
+}
+
+.LER_artNum {
+  padding: 0.2em;
+  border: 1px solid #ccc;
+  background-color: #000;
+  color: cyan;
+  text-decoration: none;
+}
