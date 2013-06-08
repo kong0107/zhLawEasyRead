@@ -5,7 +5,7 @@ LER = {
   numRE: null,
   artNumRE: null,
   lastPCode: "",
-  onload: function(){},
+  onload: function(){}, /// used while overwrite window.onload
 
   /// Regular Expression Text
   retNumber: "[\\d零一二三四五六七八九十百千]+",
@@ -19,9 +19,9 @@ LER = {
       if(/[\w\s\(\)（）「」，、：　]/.test(name)) continue;
       this.lawNames.push(name);
     }
-    this.lawNames.sort(function(a,b){return b.length-a.length});
+    this.lawNames.sort(function(a,b){return b.length-a.length}); /// 由長至短排列，以避免遇到「刑法施行法」卻比對到「刑法」
 
-    this.lawNameRE = new RegExp(this.lawNames.join("|"), 'g');
+    this.lawNameRE = new RegExp(this.lawNames.join("|"), 'g'); /// 共約十七萬字
     this.numRE = new RegExp(this.retNumber, 'g');
     this.retElement = this.retElement.replace(new RegExp("%number%", 'g'), this.retNumber);
     this.artNumRE = new RegExp(this.retElement, 'g');
@@ -29,25 +29,25 @@ LER = {
     if(window.onload) this.onload = window.onload;
     window.onload = function() {
       LER.onload();
-      LER.main(document.body);
+      LER.parse(document.body);
     };
 
     this.inited = true;
   },
 
   getPCodeByName: function(name) {
+    /// 未來修改方向：init()已經把lawNames改成由長至短排列，故這邊應該能有更快的搜尋方式－－但不知有無必要
     for(var i = 0; i < pcodes.length; ++i) {
       if(name == pcodes[i].name) return pcodes[i].PCode;
     }
     return null;
   },
 
-  parse: function(str) {
-    var result = [];
+  parseLawName: function(str, inSpecial) {
+    var result = [], node;
     this.lawNameRE.lastIndex = 0;
     var splitted = str.split(this.lawNameRE);
     var matched = str.match(this.lawNameRE);
-    // alert(splitted.length); alert(matched.length);
     for(var i = 0; i < splitted.length; ++i) {
       if(splitted[i].replace(/\s+/, '').length > 0) {
         if(this.lastPCode.length)
@@ -58,24 +58,27 @@ LER = {
       if(splitted.length == 1 || i == matched.length) break;
 
       this.lastPCode = this.getPCodeByName(matched[i]);
-      var node = document.createElement('A');
-      node.appendChild(document.createTextNode(matched[i]));
-      node.setAttribute('href', "http://law.moj.gov.tw/LawClass/LawAll.aspx?PCode=" + this.lastPCode);
-      node.setAttribute('target', '_blank');
+      //if(inSpecial != 'TEXTAREA') {
+      if(!inSpecial) {
+        node = document.createElement('A');
+        node.setAttribute('target', '_blank');
+        node.setAttribute('href', "http://law.moj.gov.tw/LawClass/LawAll.aspx?PCode=" + this.lastPCode);
+      }
+      else node = document.createElement("SPAN");
       node.className = "LER_lawName";
+      node.appendChild(document.createTextNode(matched[i]));
+      //}
+      //else node = document.createTextNode(matched[i]);
       result.push(node);
     }
     return result;
   },
 
-  parseArtNum: function(str) {
-    var result = [];
+  parseArtNum: function(str, inSpecial) {
+    var result = [], node;
     this.artNumRE.lastIndex = 0;
     var splitted = str.split(this.artNumRE);
     var matched = str.match(this.artNumRE);
-
-    //result.push(document.createTextNode(str));
-    //alert(splitted.length + str); alert(matched.length);
     for(var i = 0; i < splitted.length; ++i) {
       if(splitted[i].replace(/\s+/, '').length > 0)
         result.push(document.createTextNode(splitted[i]));
@@ -84,13 +87,15 @@ LER = {
       var nums = matched[i].match(this.numRE);
       var flno = this.chineseToInt(nums[0]);
       if(typeof nums[1] != 'undefined') flno += "-" + this.chineseToInt(nums[1]);
-      var href = "http://law.moj.gov.tw/LawClass/LawSingle.aspx?Pcode=" + this.lastPCode + "&FLNO=" + flno;
-      var node = document.createElement('A');
-      node.setAttribute('target', '_blank');
-      node.setAttribute('href', href);
+      if(!inSpecial) {
+        node = document.createElement('A');
+        node.setAttribute('target', '_blank');
+        node.setAttribute('href', "http://law.moj.gov.tw/LawClass/LawSingle.aspx?Pcode=" + this.lastPCode + "&FLNO=" + flno);
+      }
+      else node = document.createElement('SPAN');
       node.setAttribute('title', matched[i]);
-      node.appendChild(document.createTextNode("§"+flno));
       node.className = "LER_artNum";
+      node.appendChild(document.createTextNode("§"+flno));
       result.push(node);
     }
     return result;
@@ -119,23 +124,24 @@ LER = {
     return eval(result);
   },
 
-  main: function(node/*, inSpecial*/) {
+  parse: function(node, inSpecial) {
     var next;
+    if(typeof inSpecial == 'undefined') inSpecial = '';
     switch(node.nodeType) {
       case Node.ELEMENT_NODE:
-        /*if(['A', 'TEXTAREA'].indexOf(node.nodeName) >= 0)
-          inSpecial = node.nodeName;*/
+        if(node.nodeName == 'TEXTAREA') return;
+        if(node.nodeName == 'A' && node.href) inSpecial = 'A';
         for(var cur = node.firstChild; cur; cur = next) {
           next = cur.nextSibling;
           /*
             There may be insertion between `cur` and `next` later;
             therefore this shouldn't be `cur = cur.nextSibling`.
           */
-          this.main(cur/*, inSpecial*/);
+          this.parse(cur, inSpecial);
         }
         return;
       case Node.TEXT_NODE:
-        var nl = this.parse(node.data/*, inSpecial*/);
+        var nl = this.parseLawName(node.data, inSpecial);
         if(!nl.length) return;
         node.parentNode.replaceChild(nl[0], node);
         node = nl[0];

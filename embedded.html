@@ -6,17 +6,27 @@
   <link rel="stylesheet" type="text/css" href="embedded.css">
   <script src="pcodes.js"></script>
   <script src="aliases2.js"></script>
-  <script src="embedded.js"></script>
   <style>
   </style>
   </head>
-  <body style="padding-top: 120px;">
+  <body>
     <div id="main" style="line-height: 2;">
       前測試：藏馬的第八條尾巴出現了，大和很緊張。
       <hr />
-      儘管公民投票法在第三十條說了XXXX，但是第三十一條之二卻又YYYY；
+      儘管民事訴訟法法在第三十條說了XXXX，但是第三十一條之二卻又YYYY；
       社會秩序維護法第八十條第一款則ZZZZ。
-      兒少法、個資法也可以啦，但是提到「日本憲法」時還是會有狀況啦～
+      兒少法、個資法等簡稱也可以支援，但是提到「日本憲法」時還是會有狀況啦～
+      <br />
+      <ul class="a b">
+      <li>如果是在<a href="http://kong0107.blogspot.com/">連結裡面提到刑事訴訟法，那會改套成&lt;SPAN /&gt;而非&lt;A / &gt;</a>。
+      儘管有判斷&lt; A /&gt;是否有href屬性，但還是要小心一些元件的onClick狀況。</li>
+      <li>
+      <textarea style="width: 100%;">TEXTAREA標籤裡面的法規名稱（測試：中華民國憲法）會被直接跳過而不處理，也不用擔心表單元件</textarea>
+      </li>
+      <li>不過目前還沒有測試瀏覽器端的WYSIWYG編輯器是否會發生甚麼事。編輯部落格時要小心。</li>
+      </ul>
+      
+      
       <hr />
       後測試：藏馬的第八條尾巴出現了，大和很緊張。
     </div>

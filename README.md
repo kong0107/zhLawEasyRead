@@ -1,8 +1,10 @@
 # Introduction
-An extension for Chrome browser to view Taiwan's law articles/websites easier,
-related with [g0v/laweasyread](https://github.com/g0v/laweasyread) but functions differently and not combined together yet.
+* a client-side JavaScript for popular browsers and an extension for Google Chrome to parse the contents of webpage to view Taiwan's law articles/websites easier.
+* related with [g0v/laweasyread](https://github.com/g0v/laweasyread) but functions differently and not combined together yet.
 
-Google瀏覽器外掛，可於瀏覽政府網站時：
+部落客或網站將本專案引入後，即可將法規名稱與該條號變成連往[全國法規資料庫](http://law.moj.gov.tw/)的連結。（與下述瀏覽器外掛獨立運作）
+
+亦含一Google瀏覽器外掛，可於瀏覽政府網站時：
 * 自動將法規中的條項款目改為易於閱讀的文字代號，例如：
     * 「民法第一千零七十六條之一第一項第二款」將變為「民法§1076-1 I(2)」；
     * 「立法院公報第八十卷第二十二期第一０七頁」將變為「立法院公報vol. 80, no. 22, p.107」。
@@ -13,12 +15,29 @@ Google瀏覽器外掛，可於瀏覽政府網站時：
     * [司法院裁判書查詢](http://jirs.judicial.gov.tw/FJUD/)
 
 ## Examples
+![Embbed JS](http://images.plurk.com/kAGZ-D18Gu9XeE5EkAEn7fB8Ud.jpg)
 ![Legislative Yuan](http://images.plurk.com/c27a95275c55a8ccc4f8e39704df1875.jpg)
 ![Judicial Interpretation](http://images.plurk.com/kAGZ-16lLevTTpEXtHornsBqrXY.jpg)
 
 
 # Installation
-* 按網頁左上方的"ZIP"下載本專案的打包檔，並解壓縮到任意處。
+按網頁左上方的"ZIP"下載本專案的打包檔，並解壓縮到任意處。
+
+## Embedded JavaScript for Websites and Blogs
+
+在網頁HTML原始碼中的`</head>`前加入
+```html
+  <script src="pcodes.js"></script>
+  <script src="aliases2.js"></script>
+  <script src="embedded.js"></script>
+```
+
+（非必要）針對`.LER_lawName`和`.LER_artNum`編輯自己的CSS規則，或是引用本專案中的`embedded.css`
+```html
+  <link rel="stylesheet" type="text/css" href="embedded.css">
+```
+
+## Google Chrome Extension
 * 進入Chrome的「擴充功能」設定頁面（網址輸入 chrome://extensions/ ），勾選右上角的「開發人員模式」。
 * 點選剛剛冒出來的「載入未封裝擴充功能」按鈕。
 * 選取剛剛解壓縮出來的資料夾。
@@ -26,6 +45,7 @@ Google瀏覽器外掛，可於瀏覽政府網站時：
 * 解壓縮出來的資料夾與檔案不要刪掉。
 
 # Notices
+* 本專案現有「網站內嵌JavaScript」和「Google瀏覽器外掛」兩種功能，會一直維持可獨立運作，只是由於（將）會有共用程式碼，所以放在一起。
 * Google說「需支付一次性的開發人員註冊費 US$5.00」，所以（還）沒有放在「Chrome 線上應用程式商店」。
 * 為避免出現「漩渦鳴人的 §8 尾巴出現了」這種情況，僅限定政府網站（`*.gov.tw`）和 [法源法律網](http://www.lawbank.com.tw/‎)的網頁會轉換。
     * 若需要針對其他網域，請編輯`manifest.json`內的最後一個`matches`，然後再於Chrome的[擴充功能]chrome://extensions/ 中「重新載入」。
@@ -35,6 +55,7 @@ Google瀏覽器外掛，可於瀏覽政府網站時：
     * 註：大陸地區與聯合國文件中，「項」與「款」的順序與台灣地區相反，但本外掛沒有考量此部分。
 
 # Bugs
+* 未確認與WYSIWYG編輯器的相互干擾情形。如有使用類似編輯器的部落客請盡量以Widget的方式引用。
 * 行政訴訟法§96 III: 「第四十四條之『參加人』」會變成「§44-3加人」
 * 一個法規（而非一個條文）若有分章節款目，其中「款」與「目」亦會被轉換。
 * 即使修改會套用的網站，亦未能運作於[評律網](http://www.pingluweb.com/)等以AJAX機制更新的內容。
@@ -54,8 +75,20 @@ Google瀏覽器外掛，可於瀏覽政府網站時：
 用遞迴方式跑過整個HTML的DOM tree，抓出textNode來處理。
 因此，勢必得用document.createElement和appendChild等DOM方法，而不能修改innerHTML。
 
-核心演算法寫於 parseAndReplace.js 
+## Algorithm
+核心演算法寫於 `embedded.js`
+* `LER.parse()`嘗試處理`document.body`的每一個child。
+    * 把非純文字的child再丟給`LER.parse()`去recursion；
+    * 把純文字的child代換為丟去`parseArticleName()`而得的node array 
+* `LER.parseLawName()`把字串分成「法規名稱」和「其他」兩區，然後再依原本的順序串成node array。
+    * 處理法規名稱時，代換成連往全國法規資料庫中該法規的全部條文頁面的連結（如要連往其他網站，或是改成popup等，亦於此處理）
+    * 處理「其他」時，丟給`parseArtNum()`嘗試尋找「第X條之Y」的子字串
+* `LER.parseArtNum()`把字串分成「條號」和「其他」兩區，亦依原本的順序串成node array。
+    * 可以處理「第七十七條之二十七」這種情形，並會轉換為如`§77-27`之格式。
+    * 如果在前一階段有比對到法規名稱，此階段即會將條號加上連向該法規該條號的頁面。
 
+## 以下為較舊的演算法，目前仍由瀏覽器外掛部分使用
+見`parseAndReplace.js`
 ### function `parser`(`node`, `inSpecial`)
 * `inSpecial`記載「是否為`TEXTAREA`、`A`或其他特殊元素或其後代」。
 * 如果`node`是`ELEMENT_NODE`，那就把每個 childNode 也都丟進`parser()`遞迴；
