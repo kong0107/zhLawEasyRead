@@ -9,12 +9,13 @@
       inited: false,
       lawNames: [],
       lawNameRE: null,
+      numRE: null,
       artNumRE: null,
       lastPCode: "",
 
       /// Regular Expression Text
       retNumber: "[\\d零一二三四五六七八九十百千]+",
-      retElement: "第(%number%)條(之(%number%))?",
+      retElement: "第(?:%number%)條(?:之(?:%number%))?",
       retElements: "not supported",
 
       init: function(){
@@ -26,8 +27,10 @@
         }
         this.lawNames.sort(function(a,b){return b.length-a.length});
 
-        this.lawNameRE = new RegExp(LER.lawNames.join("|"), 'g');
-        this.artNumRE = new RegExp(this.retElement.replace(new RegExp("%number%", 'g'), this.retNumber), 'g');
+        this.lawNameRE = new RegExp(this.lawNames.join("|"), 'g');
+        this.numRE = new RegExp(this.retNumber, 'g');
+        this.retElement = this.retElement.replace(new RegExp("%number%", 'g'), this.retNumber);
+        this.artNumRE = new RegExp(this.retElement, 'g');
 
         this.inited = true;
       },
@@ -52,7 +55,8 @@
             else result.push(document.createTextNode(splitted[i]));
           }
           /// handle matched law names
-          if(i == matched.length) break;
+          if(splitted.length == 1 || i == matched.length) break;
+
           this.lastPCode = this.getPCodeByName(matched[i]);
           var node = document.createElement('A');
           node.appendChild(document.createTextNode(matched[i]));
@@ -69,36 +73,83 @@
         var splitted = str.split(this.artNumRE);
         var matched = str.match(this.artNumRE);
 
-        result.push(document.createTextNode(str));
-        /*alert(splitted.length + str); alert(matched.length);
         for(var i = 0; i < splitted.length; ++i) {
           if(splitted[i].replace(/\s+/, '').length > 0)
             result.push(document.createTextNode(splitted[i]));
-          if(i == matched.length) break;
+          if(splitted.length == 1 || i == matched.length) break;
 
-          var href = "http://law.moj.gov.tw/LawClass/LawSingle.aspx?Pcode=" + this.lastPCode + "&FLNO=" + 1;
+          var nums = matched[i].match(this.numRE);
+          var flno = this.chineseToInt(nums[0]);
+          if(typeof nums[1] != 'undefined') flno += "-" + this.chineseToInt(nums[1]);
+          var href = "http://law.moj.gov.tw/LawClass/LawSingle.aspx?Pcode=" + this.lastPCode + "&FLNO=" + flno;
           var node = document.createElement('A');
           node.appendChild(document.createTextNode(matched[i]));
           node.setAttribute('href', href);
           node.setAttribute('target', '_blank');
           result.push(node);
-        } */
+        }
         return result;
       },
 
-      dummy: null
+      chineseToInt: function(str) {
+        var ones = '零一二三四五六七八九０１２３４５６７８９○ㄧ';
+        var tens = '十百千拾佰仟什';
+        var i, pos, result = '';
+        str = str.replace(new RegExp('[^' + ones + tens + ']', 'g'), '');
+        if(!isNaN(parseInt(str))) return parseInt(str, 10);
+        if(!new RegExp('[' + tens + ']', 'g').test(str)) {
+          for(i = 0; i < str.length; i++)
+            result += ones.indexOf(str.charAt(i)) % 10;
+        }
+        else {
+          str = str.replace(/^[十什拾]/, '一十');
+          str = str.replace(new RegExp('(^|[^' + ones + '])[十什拾]', 'g'), '$1一十');
+          for(i = 0; i < str.length; i++) {
+            pos = ones.indexOf(str.charAt(i)) % 10;
+            if(pos > 0) {result += '+' + pos; continue;} // zero could be ignored
+            pos = tens.indexOf(str.charAt(i)) % 3;
+            if(pos >= 0) result += '*' + [10, 100, 1000][pos];
+          }
+        }
+        return eval(result);
+      },
+
+      main: function(node/*, inSpecial*/) {
+        var next;
+        switch(node.nodeType) {
+          case Node.ELEMENT_NODE:
+            /*if(['A', 'TEXTAREA'].indexOf(node.nodeName) >= 0)
+              inSpecial = node.nodeName;*/
+            for(var cur = node.firstChild; cur; cur = next) {
+              next = cur.nextSibling;
+              /*
+                There may be insertion between `cur` and `next` later;
+                therefore this shouldn't be `cur = cur.nextSibling`.
+              */
+              this.main(cur/*, inSpecial*/);
+            }
+            return;
+          case Node.TEXT_NODE:
+            var nl = this.parse(node.data/*, inSpecial*/);
+            if(!nl.length) return;
+            node.parentNode.replaceChild(nl[0], node);
+            node = nl[0];
+            next = node.nextSibling;
+            for(var i = 1; i < nl.length; i++)
+              if(next) node.parentNode.insertBefore(nl[i], next);
+              else node.parentNode.appendChild(nl[i]);
+            return;
+        }
+      }
     };
     LER.init();
   </script>
 
   </head>
-  <body style="padding-top: 60px;">
-    <div style="position:absolute; top: 0; left: 0; width: 100%; padding: 0.25em; text-align: center; color: #fff; background-color: #000; font-weight: bold; font-size: 32px;">Sorry, 我沒有筆電所以只好來霸占這台。</div>
+  <body style="padding-top: 120px;" onLoad="LER.main(document.body);">
     <script>
-      str = "儘管公民投票法雖然在第三十條說了XXXX，但是第三十一條之二卻又YYYY；社會秩序維護法第八十條第一款則ZZZZ。";
-      document.write(str);
-
-
+      str = "儘管公民投票法在第三十條說了XXXX，但是第三十一條之二卻又YYYY；社會秩序維護法第八十條第一款則ZZZZ。";
+      document.write("<div id='lala'><span>"+str+"</span></div>");
     </script>
   </body>
 </html>
