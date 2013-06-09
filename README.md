@@ -76,6 +76,7 @@
 因此，勢必得用document.createElement和appendChild等DOM方法，而不能修改innerHTML。
 
 ## Algorithm
+說穿了就是：把每個「只含文字的節點」（`TEXT_NODE`)代換成一串新的節點。
 核心演算法寫於 `embedded.js`
 * `LER.parse()`嘗試處理`document.body`的每一個child。
     * 把非純文字的child再丟給`LER.parse()`去recursion；
