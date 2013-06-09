@@ -16,7 +16,7 @@
 
 ## Examples
 ![Embbed JS](http://images.plurk.com/kAGZ-6RFMjNeKA8ET4PRZDyhD3L.jpg)
-![Legislative Yuan](http://images.plurk.com/c27a95275c55a8ccc4f8e39704df1875.jpg)
+![Legislative Yuan](http://images.plurk.com/kAGZ-MUrLU6fv1v12bIOYlML4b.jpg)
 ![Judicial Interpretation](http://images.plurk.com/kAGZ-16lLevTTpEXtHornsBqrXY.jpg)
 
 
