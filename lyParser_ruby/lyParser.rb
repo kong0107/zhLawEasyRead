@@ -27,12 +27,12 @@ def parse_version2(html)
     end
 
     articles = []
-    html.gsub(/<table><tr><td>&nbsp;&nbsp;&nbsp;<\/td><td>(<font color=8000ff>(第([零一二三四五六七八九十百千]+)條(之[一二三四五六七八九十]+)?)<\/font>)?\n(&nbsp;&nbsp;<font size=2>\(([^\)]*)\))?<\/font>\n<table><tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<\/td>\n<td>\n(([^<]+<br>\n)+)<\/td>/) do
+    html.gsub(/<table><tr><td>&nbsp;&nbsp;&nbsp;<\/td><td>(<font color=8000ff>(第([零一二三四五六七八九十百千]+)條(之[一二三四五六七八九十]+)?)<\/font>)?\n(&nbsp;&nbsp;<font size=2>\(([^\)]*)\))?<\/font>\n<table><tr><td>&nbsp;&nbsp;&nbsp;&nbsp;<\/td>\n<td>\n(([^<]+<br>\r?\n)+)<\/td>/) do
         offset = $~.begin(0)
         title = $6
         num2 = $4.to_s
         num = $3.to_i * 100 + num2.slice(1, num2.to_s.length-1).to_i
-        content = $7.gsub /(^|<br>(\n))(　*)/, '\2'
+        content = $7.gsub /(^|<br>\r?(\n))(　*)/, '\2'
         articles.push({:offset=>offset, :num=>num, :title=>title, :content=>content.rstrip})
     end
     
