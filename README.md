@@ -65,6 +65,18 @@
 
 # Development
 
+## Javascript Prototype
+目前只把核心開發好，還沒套用上去。
+但未來只要引入 `jsExt.js` ，就可以一行
+`document.body.replaceChildren(/第\s*(\d+)\s*條/, "§$1");`
+就把所有的條號都轉換掉。
+
+* 亦支援第二個引數為函數的情形，概念類同 `String.prototype.replace` ，詳參該檔中的註解。
+* 會把呼叫者的子節點（預設並含所有後代節點）中的 `ELEMENT_NODE` 中的 `TEXT_NODE` 都跑過
+    * 雖然 `BUTTON`, `TEXTAREA`, `PRE` 和 `SCRIPT` 都是這幾個在本專案中應該都不需要處理，但為了維持該函數的通用性， `Text.prototype.replace` 和 `Element.prototype.replaceChildren` 並不主動排除該些節點。若有需要，未來可以考慮多加參數處理「要處理／排除的標籤」，並為該參數設定預設值。
+* `Element.prototype.replaceChild` 亦被改寫。第一個引數不再必須是節點，亦可以是節點陣列。
+* `jsExt.js` 亦改寫 `parseInt` ，可將中文數字字串轉為整數。
+
 ## First Idea
 原本是以字串取代的方式去改變document.body.innerHTML（之前的0.1.8版即是如此），但發現有三個難處：
 * 有（類似）onLoad function的網頁（如「全國法規資料庫」的首頁）即會無後續動作。
