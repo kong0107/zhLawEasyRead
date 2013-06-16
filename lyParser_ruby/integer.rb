@@ -29,6 +29,7 @@ class Integer
             if result != "" && hundred == 0 then result += "零" end
             if ten > 1 || result != "" && hundred == 0 then
                 # to disable weird law-numeric mode, just delete hundred==0 condition
+                # 參閱：〈法律統一用語表〉，《文書處理手冊》（行政院秘書處，2010年3月）62頁。
                 result += digits[ten]
             end
             result += "十"

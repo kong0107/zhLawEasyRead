@@ -1,35 +1,53 @@
+/// IE 沒有 Node 類別；不過這個作法應該是很不好？
+if(typeof Node == "undefined") Node = Element;
+
 /** 使 Node 物件支援「將一個節點代換為一串節點」
- *
- *  Bugs: 替換陣列中如果包含原節點，原節點仍會被移除
+ * \param new_obj 新物件，類型可為：
+ *      * 節點：由原函數處理。
+ *      * 可轉為文字的不可數物件：轉為文字節點，仍由原函數處理。
+ *      * 可數物件：將每個元素依序插入要被替換的位置
+ * \param old_node 舊節點，需為節點。
+ * \return 舊節點
+ *  Bug: 替換陣列中如果包含原節點，原節點仍會被移除
  */
 try {
+    /// 先測試是否支援此功能，如果不支援才需要宣告
     (function() {
         var emptyTN = document.createTextNode("");
         document.body.appendChild(emptyTN);
-        document.body.replaceChild([], emptyTN); /// 看看是否已支援此功能
-        /// emptyTN 應該不用removeChild，只要 Node.prototype.joinTexts 就好
+        document.body.replaceChild([], emptyTN);
     })();
 }
 catch(e) {
     Node.prototype.replaceChild = function() {
         var orig = Node.prototype.replaceChild;
-        return function() {
-            var new_obj = arguments[0];
-            var old_node = arguments[1];
+        return function(new_obj, old_node) {
             if(!(old_node instanceof Node)          /// 意外用法
                 || new_obj instanceof Node          /// 原本用法
             ) return orig.apply(this, arguments);   /// 都丟給原函數
         
-            if(typeof new_obj != "object")  /// 非物件的就轉成陣列
-                new_obj = [ new_obj.toString() ];
+            if(typeof new_obj != "object" || typeof new_obj.length != "number")  {
+                try {
+                    /// 非物件的，或是不可數的，就轉成文字節點，依舊丟給原函數
+                    arguments[0] = document.createTextNode(new_obj.toString());
+                    return orig.apply(this, arguments);
+                }
+                catch(e) {throw new TypeError("new_obj cannot convert into string.");}
+            }
             else if(new_obj.length == 1 && new_obj[0].isSameNode(old_node)) 
-                return; /// 陣列中只有自己的話，那就不用更換了
+                return old_node; /// 陣列中只有自己的話，那就不用更換了
             
             /* 見後述的無窮迴圈困境，這裡也會發生
                也許是正規表示法又對新的節點執行的緣故？
             var pos = new_obj.indexOf(old_node);
             if(pos >= 0) new_obj[pos] = old_node.cloneNode(true);*/
             
+            /* 這裡才是核心
+              直覺的演算法是：將全部的都插入在原本的前面，然後把原本的刪除
+              但這樣遇到「如果原本的仍在陣列中」的狀況恐不理想
+              故先新增一定位用的TextNode、全部插在其前，最後再將之刪除
+              不過
+            */
             var locator = document.createTextNode("");
             this.insertBefore(locator, old_node);
             for(var i = 0; i < new_obj.length; ++i) {
@@ -48,112 +66,132 @@ catch(e) {
     }();
 }
 
-
-/** 仿字串的replace()方法並更新自身
- */
-Text.prototype.replaceSelf = function(pattern, replacement) {
-    this.data = (typeof pattern == "string" && typeof replacement == "string")
-        ? this.data.split(pattern).join(replacement) /// 因為每個都想替換，只好這樣
-        : this.data.replace(pattern.setGlobal(), replacement)
-    ;
-    return this;
-};
-
 /** 唔，其實不是setter，而是回傳有設global flag的物件
  *  嘗試覆寫RegExp的建構子，未成功
  *  嘗試用__defineSetter__，但並不知道其property name
  */
-RegExp.prototype.setGlobal = function() {
-    if(this.global) return this;
-    var attr = "g";
-    if(this.ignoreCase) attr += "i";
-    if((typeof RegExp.prototype.multiline != "undefined") && this.multiline)
-        attr += "m";
-    return new RegExp(this.source, attr);
-};
+if(!RegExp.prototype.setGlobal) {
+    RegExp.prototype.setGlobal = function() {
+        if(this.global) return this;
+        var attr = "g";
+        if(this.ignoreCase) attr += "i";
+        if((typeof RegExp.prototype.multiline != "undefined") && this.multiline)
+            attr += "m";
+        return new RegExp(this.source, attr);
+    };
+}
 
-/** 模擬字串的replace，但回傳值、第二個引數不同；不會更新自身
+/** 仿字串的replace()方法並更新自身
+ *  本專案中似無用到
+ */
+if(!Text.prototype.replaceSelf) {
+    Text.prototype.replaceSelf = function(pattern, replacement) {
+        if(pattern instanceof RegExp) 
+            this.data = this.data.replace(pattern.setGlobal(), replacement);
+        else if(typeof pattern == "string") {
+            if(typeof replacement == "string")
+                this.data = this.data.split(pattern).join(replacement);
+            else if(typeof replacement == "function") /// 也許該改寫成把配對到的位置丟給replacement
+                this.data = this.data.split(pattern).join(replacement(pattern));
+            else throw new TypeError("Text#replaceSelf: replacement cannot be " + typeof replacement);
+        }
+        else throw new TypeError("Text#replaceSelf: pattern cannot be " + typeof pattern);
+        return this;
+    };
+}
+
+/** 模擬字串的replace，但回傳值與第二個引數不同；不會更新自身
  *  \param replacement 字串或函數。如為函數，其接收之引數與文字物件的replace()類似相同，但：
  *      最後一個引數不是全字串，而是節點
  *      replacement的回傳值不是字串，而是節點陣列
  *      關於字串的replace，參閱http://www.w3school.com.cn/js/jsref_replace.asp
  *  \return 節點陣列
  */
-Text.prototype.replace = function(pattern, replacement) {
-    /// 型態檢查
-    var replaceType = typeof replacement;
-    if(replaceType != "string" && replaceType != "function") 
-        throw new TypeError("replacement cannot be " + replaceType);
+Text.prototype.replace = function() {    
+    var orig = Text.prototype.replace
+        ? Text.prototype.replace
+        : function() { throw new TypeError("Text#replace"); }
+    return function(pattern, replacement) {
+        //console.log("Text#replace(" + this.data.replace(/\n/g, '\\n') + ")");
+        /// 型態檢查
+        var replaceType = typeof replacement;
+        if(replaceType != "string" && replaceType != "function") 
+            return orig.apply(this, arguments); 
+        ///< 因為可能有其他外掛用不同的方式宣告過此函數，故如此宣告
+            
+        /// 處理一些簡單的情形
+        if(!this.data.length) return [];
+        var splitted = this.data.split(pattern);
+        if(splitted.length == 1) return [this];
+        var result = [splitted.shift()];
         
-    /// 處理一些簡單的情形
-    if(!this.data.length) return [];
-    var splitted = this.data.split(pattern);
-    if(splitted.length == 1) return [this];
-    var result = [splitted.shift()];
-    
-    if(pattern instanceof RegExp) {
-        pattern = pattern.setGlobal();
-        pattern.lastIndex = 0;
-        if(replaceType == "string") {
-            var str = this.data.replace(pattern, replacement);
-            return [document.createTextNode(str)];
+        /// 主要演算法
+        if(pattern instanceof RegExp) {
+            pattern = pattern.setGlobal();
+            pattern.lastIndex = 0;
+            if(replaceType == "string") {
+                var str = this.data.replace(pattern, replacement);
+                return [document.createTextNode(str)];
+            }
+            var match;
+            while((match = pattern.exec(this.data)) != null) {
+                match.push(match.index);
+                match.push(this);
+                result = result.concat(replacement.apply(this, match)); 
+                /// match 的 index 和 input 傳過去後會自己消失
+                result.push(splitted.shift());
+            }
         }
-        var match;
-        while((match = pattern.exec(this.data)) != null) {
-            match.push(match.index);
-            match.push(this);
-            result = result.concat(replacement.apply(this, match)); 
-            /// match 的 index 和 input 傳過去後會自己消失
-            result.push(splitted.shift());
-        }
-    }
-    else if(typeof pattern == "string") { 
-        if(replaceType == "string") {
-            var str = this.data.split(pattern).join(replacement);
-            return [document.createTextNode(str)];
-        }
-        var match = [pattern, -1, this];
-        for(var pos = 0; 
-            (pos = this.data.indexOf(pattern, pos)) >= 0; 
-            pos += pattern.length
-        ) {
-            /// 演算法同上，只是取得match的方式有點醜
-            match[1] = pos;
-            result = result.concat(replacement.apply(this, match));
-            result.push(splitted.shift());
-        }
-    }    
-    else throw new TypeError("pattern cannot be " + (typeof pattern));
-        
-    for(var i = 0; i < result.length; ++i) /// 陣列中的元素都是節點
-        if(!(result[i] instanceof Node)) result[i] = document.createTextNode(result[i]);    
-    return result;
-}
+        else if(typeof pattern == "string") { 
+            if(replaceType == "string") {
+                var str = this.data.split(pattern).join(replacement);
+                return [document.createTextNode(str)];
+            }
+            var match = [pattern, -1, this];
+            for(var pos = 0; 
+                (pos = this.data.indexOf(pattern, pos)) >= 0; 
+                pos += pattern.length
+            ) {
+                /// 演算法同上，只是取得match的方式有點醜
+                match[1] = pos;
+                result = result.concat(replacement.apply(this, match));
+                result.push(splitted.shift());
+            }
+        }    
+        else throw new TypeError("pattern cannot be " + (typeof pattern));
+            
+        for(var i = 0; i < result.length; ++i) /// 陣列中的元素都是節點
+            if(!(result[i] instanceof Node)) 
+                result[i] = document.createTextNode(result[i]);    
+        return result;
+    };
+}();
 
 /** 把子節點中，連續的純文字部分合併
  *  \param recursive 預設為不會遞迴呼叫
  */
-Node.prototype.joinTexts = function(recursive) {
-    if(arguments.length == 0) recursive = false;
-    for(var i = 0; i < this.childNodes.length; ++i) {
-        var cur = this.childNodes[i];
-        switch(cur.nodeType) {
-        case Node.ELEMENT_NODE:
-            if(recursive) cur.joinTexts();
-            continue;
-        case Node.TEXT_NODE:
-            var next = cur.nextSibling;
-            while(next && next.nodeType == Node.TEXT_NODE) {
-                cur.data += next.data;
-                this.removeChild(next);
-                next = cur.nextSibling;
+if(!Node.prototype.joinTexts) {
+    Node.prototype.joinTexts = function(recursive) {
+        if(arguments.length == 0) recursive = false;
+        for(var i = 0; i < this.childNodes.length; ++i) {
+            var cur = this.childNodes[i];
+            switch(cur.nodeType) {
+            case 1: ///< Node.ELEMENT_NODE
+                if(recursive) cur.joinTexts();
+                continue;
+            case 3: ///< Node.TEXT_NODE
+                var next = cur.nextSibling;
+                while(next && next.nodeType == 3) {
+                    cur.data += next.data;
+                    this.removeChild(next);
+                    next = cur.nextSibling;
+                }
+                break;
             }
-            break;
         }
+        return this;
     }
-    return this;
 }
-
 
 /** 替換子節點中的純文字部分
  *  針對每一個子節點，如其為文字節點，呼叫文字物件的 replace(pattern, replacement)
@@ -167,12 +205,11 @@ Node.prototype.joinTexts = function(recursive) {
 Element.prototype.replaceChildren = function() {
     var orig = Element.prototype.replaceChildren 
         ? Element.prototype.replaceChildren 
-        : function(){ throw new TypeError; }
+        : function(){ throw new TypeError("Element#replaceChildren"); }
     ;
-    return function() {
-        var pattern = arguments[0];
-        var replacement = arguments[1];
-        var recursive = (arguments.length > 2) ? arguments[2] : true;
+    return function(pattern, replacement, recursive) {
+        //console.log("Element#replaceChildren");
+        if(arguments.length < 3) recursive = true;
         if( /// 不支援的就丟給原本的函數
             arguments.length < 2 || arguments.length > 3
             || (typeof pattern != "string" && !(pattern instanceof RegExp))
@@ -182,13 +219,13 @@ Element.prototype.replaceChildren = function() {
         var nodes = this.childNodes;
         for(var i = 0; i < nodes.length; ++i) {
             switch(nodes[i].nodeType) {
-            case Node.ELEMENT_NODE:
+            case 1: ///< Node.ELEMENT_NODE:
                 if(recursive)
                     nodes[i].replaceChildren(pattern, replacement, recursive);
                 continue;
-            case Node.TEXT_NODE:
+            case 3: ///< Node.TEXT_NODE:
                 var nodeArr = nodes[i].replace(pattern, replacement);
-                if(nodeArr.length == 1 && nodeArr[0].isSameNode(nodes[i])) continue;
+                if(nodeArr.length == 1 && nodeArr[0] === nodes[i]) continue;
                 this.replaceChild(nodeArr, nodes[i]);
                 break;
             }
@@ -197,8 +234,23 @@ Element.prototype.replaceChildren = function() {
     }
 }();
 
+/** 引入JavaScript專用的小函數
+ */
+/*function includeJS(path) {
+    var node = document.createElement("SCRIPT");
+    node.type = "text/javascript";
+    node.src = path;
+    node.onload = function(){
+        var url = path
+        return function() {
+            alert('loaded ' + url);
+        }
+    }();
+    document.getElementsByTagName('head')[0].appendChild(node);
+}*/
 
 /** 使 window.parseInt 支援中文數字
+ *  Algorithm: 把「五十六萬三百零四」轉成 "(5*10+6)*10000+3*100+0+4" 然後eval()
  *  Examples:
  *  * parseInt("七五三三九六七");   //=> 7533967
  *  * parseInt("負第十五條");       //=> -15       // 移除不支援的字
@@ -215,8 +267,7 @@ Element.prototype.replaceChildren = function() {
  *  * 未處理簡體字
  *  * 未支援「廿」、「卅」等
  *  * 未支援小數
- *
- *  Algorithm: 把「五十六萬三百零四」轉成 "(5*10+6)*10000+3*100+0+4" 然後eval()
+ * 
  */
 if(parseInt("一千一百十一")!=1111) { ///< 如果還不支援，才需要宣告
     parseInt = function() {

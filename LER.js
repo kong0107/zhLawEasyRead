@@ -1,0 +1,4 @@
+LER = function(){
+    return {
+    };
+}();
