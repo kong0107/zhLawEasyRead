@@ -7,8 +7,7 @@ if(typeof Node == "undefined") Node = Element;
  *      * 可轉為文字的不可數物件：轉為文字節點，仍由原函數處理。
  *      * 可數物件：將每個元素依序插入要被替換的位置
  * \param old_node 舊節點，需為節點。
- * \return 舊節點
- *  Bug: 替換陣列中如果包含原節點，原節點仍會被移除
+ * \return 舊節點，無論實際上有無被移除
  */
 try {
     /// 先測試是否支援此功能，如果不支援才需要宣告
@@ -37,11 +36,6 @@ catch(e) {
             else if(new_obj.length == 1 && new_obj[0].isSameNode(old_node)) 
                 return old_node; /// 陣列中只有自己的話，那就不用更換了
             
-            /* 見後述的無窮迴圈困境，這裡也會發生
-               也許是正規表示法又對新的節點執行的緣故？
-            var pos = new_obj.indexOf(old_node);
-            if(pos >= 0) new_obj[pos] = old_node.cloneNode(true);*/
-            
             /* 這裡才是核心
               直覺的演算法是：將全部的都插入在原本的前面，然後把原本的刪除
               但這樣遇到「如果原本的仍在陣列中」的狀況恐不理想
@@ -56,11 +50,7 @@ catch(e) {
                 this.insertBefore(cur, locator);
             }
             this.removeChild(locator);
-            /*if(new_obj.indexOf(old_node) < 0)*/ this.removeChild(old_node);
-            /** 應該是把上述判斷式的註解取消即可
-             *  但實際這樣做時，卻會陷入無窮迴圈
-             *  猜測是 Element#replaceChildren 那邊的遞迴
-             */
+            if(new_obj.indexOf(old_node) < 0) this.removeChild(old_node);
             return old_node;
         }
     }();
@@ -106,6 +96,8 @@ if(!Text.prototype.replaceSelf) {
  *      replacement的回傳值不是字串，而是節點陣列
  *      關於字串的replace，參閱http://www.w3school.com.cn/js/jsref_replace.asp
  *  \return 節點陣列
+ *
+ *  雖然也可使replacement可以是Node或NodeList，但恐怕要先決定：第一次比對到時，要用cloneNode還是直接replaceChild？
  */
 Text.prototype.replace = function() {    
     var orig = Text.prototype.replace
@@ -133,14 +125,26 @@ Text.prototype.replace = function() {
                 var str = this.data.replace(pattern, replacement);
                 return [document.createTextNode(str)];
             }
-            var match;
-            while((match = pattern.exec(this.data)) != null) {
+            /// pattern如果有子pattern，會造成split和match的回傳結果包含子pattern，故需如下
+            result = [];
+            for(var match, pos = 0;
+                (match = pattern.exec(this.data)) != null;
+                pos = match.index + match[0].length
+            ) {
+                result.push(document.createTextNode(this.data.substring(pos, match.index)));
                 match.push(match.index);
                 match.push(this);
-                result = result.concat(replacement.apply(this, match)); 
-                /// match 的 index 和 input 傳過去後會自己消失
-                result.push(splitted.shift());
+                
+                var replaced = replacement.apply(this, match);
+                switch(typeof replaced) {
+                case "undefined": continue;
+                case "string": replaced = [document.createTextNode(replaced)]; ///< no break
+                default: if(replaced instanceof Node) replaced = [replaced];
+                }
+                for(var i = 0; i < replaced.length; ++i) result.push(replaced[i]);
+                ///< 原本想用Array#concat，但其遇到NodeList時並不是如上運作。
             }
+            result.push(document.createTextNode(this.data.substr(pos)));
         }
         else if(typeof pattern == "string") { 
             if(replaceType == "string") {
@@ -152,7 +156,7 @@ Text.prototype.replace = function() {
                 (pos = this.data.indexOf(pattern, pos)) >= 0; 
                 pos += pattern.length
             ) {
-                /// 演算法同上，只是取得match的方式有點醜
+                /// 演算法類似上面，只是取得match的方式有點醜；應再改為如上防錯機制
                 match[1] = pos;
                 result = result.concat(replacement.apply(this, match));
                 result.push(splitted.shift());
@@ -205,34 +209,85 @@ if(!Node.prototype.joinTexts) {
 Element.prototype.replaceChildren = function() {
     var orig = Element.prototype.replaceChildren 
         ? Element.prototype.replaceChildren 
-        : function(){ throw new TypeError("Element#replaceChildren"); }
+        : function(){ 
+            console.log(arguments);
+            throw new TypeError("Element#replaceChildren"); 
+        }
     ;
-    return function(pattern, replacement, recursive) {
+    return function(pattern, replacement, skippingTags, recursive) {
         //console.log("Element#replaceChildren");
-        if(arguments.length < 3) recursive = true;
+        if(arguments.length < 3) skippingTags = ["SCRIPT", "CODE", "TEXTAREA"];
+        if(arguments.length < 4) recursive = true;
         if( /// 不支援的就丟給原本的函數
-            arguments.length < 2 || arguments.length > 3
+            arguments.length < 2 || arguments.length > 4
+            || !(skippingTags instanceof Array)
             || (typeof pattern != "string" && !(pattern instanceof RegExp))
             || (typeof replacement != "string" && typeof replacement != "function")
-        ) return orig.apply(this, arguments);
+        ) return orig.apply(this, arguments);        
         
-        var nodes = this.childNodes;
-        for(var i = 0; i < nodes.length; ++i) {
-            switch(nodes[i].nodeType) {
+        for(var cur = this.firstChild, next; cur; cur = next) {
+            next = cur.nextSibling;
+            switch(cur.nodeType) {
             case 1: ///< Node.ELEMENT_NODE:
-                if(recursive)
-                    nodes[i].replaceChildren(pattern, replacement, recursive);
+                if(recursive && skippingTags.indexOf(cur.tagName) < 0)
+                    cur.replaceChildren(pattern, replacement, skippingTags, recursive);
                 continue;
             case 3: ///< Node.TEXT_NODE:
-                var nodeArr = nodes[i].replace(pattern, replacement);
-                if(nodeArr.length == 1 && nodeArr[0] === nodes[i]) continue;
-                this.replaceChild(nodeArr, nodes[i]);
+                var nodeArr = cur.replace(pattern, replacement);
+                if(nodeArr.length == 1 && nodeArr[0] === cur) continue;
+                this.replaceChild(nodeArr, cur);
                 break;
             }
         }
         return this;
     }
 }();
+
+/** 判斷是不是某標籤的後代節點
+  * Examples:
+  * * node.isDecendantOfTag("pre");
+  * * node.isDecendantOfTag("pre", "script");
+  * * node.isDecendantOfTag(["pre", "script"]);
+  */
+Node.prototype.isDescendantOfTag = function() {
+    var orig = Node.prototype.isDescendantOfTag
+        ? Node.prototype.isDescendantOfTag
+        : function(){ throw new TypeError("input not string or array of strings"); }
+    ;
+    return function(tag) {
+        if(arguments.length == 0 || typeof arguments[0].length == "undefined")
+            return orig.apply(this, arguments); ///< 不知怎處理的就給原函數
+        
+        if(typeof arguments[0] != "string") arguments = arguments[0];
+        for(var i = 0; i < arguments.length; ++i) 
+            arguments[i] = arguments[i].toString().toUpperCase();
+        for(var ancestor = this.parentElement;
+            ancestor != null; 
+            ancestor = ancestor.parentElement
+        ) {
+            /// 唔...arguments沒有indexOf方法
+            for(var i = 0; i < arguments.length; ++i)
+                if(ancestor.tagName == arguments[i]) return true;
+        }
+        return false;
+    }
+}();
+
+
+/** 將XML字串轉為NodeList
+  * 原本的 DOMParser#parseFromString 必須輸入恰有一根節點的XML，
+  * 這裡只是最外面先包一個隨便的標籤，轉完後再求其子節點列表。
+  * 並不會檢查是否是合法的HTML標籤。
+  * 實際把東西塞進DOM tree的時候，似乎都沒有元素性質（如連節），故專案中未使用
+  */
+if(!window.parseXMLtoNodeList) {
+    parseXMLtoNodeList = function() {
+        var domParser = new DOMParser();
+        return function(xml) {
+            return domParser.parseFromString("<xml>" + xml + "</xml>", "text/xml").lastChild.childNodes;
+        }
+    }();
+}
 
 /** 引入JavaScript專用的小函數
  */

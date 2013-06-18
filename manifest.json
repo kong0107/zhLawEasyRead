@@ -1,12 +1,20 @@
 {
   "name": "zhLawEasyRead",
   "manifest_version": 2,
-  "version": "0.2.9",
+  "version": "0.3.0",
   "description": "Replace chinese words of sequence number of law articles into arabic or roman numerals.",
   "permissions": [
+    "contextMenus", "tabs"
   ],
+  "icons" : {
+    "128": "icon.png"
+  },
+  "background": {
+    "scripts": ["background.js"]
+  },
   "browser_action": {
     "default_icon": "icon.png",
+    "default_title": "法令易讀器",
     "default_popup": "popup.html"
   },
   "content_scripts": [
@@ -26,20 +34,29 @@
       "js": ["ly.js"]
     },
     {
-      "matches": [
-        "*://*.gov.tw/*",
-        "*://*.lawbank.com.tw/*",
-        "file:///*"
-      ],
-      "exclude_matches": [
-        "http://law.moj.gov.tw/Eng/*"
-      ],
+      "matches": ["*://localhost/*"],
       "css": ["main.css"],
       "js": [
         "functions.js",
         "pcodes.js",
         "aliases.js",
         "parseAndReplace.js"
+      ]
+    },
+    {
+      "matches": [
+        "file:///*",
+        "*://*.gov.tw/*",
+        "*://*.lawbank.com.tw/*"
+      ],
+      "exclude_matches": [
+        "http://law.moj.gov.tw/Eng/*"
+      ],
+      "css": ["main.css"],
+      "js": [
+        "jsExt.js",
+        "LER.js",
+        "auto.js"
       ]
     }
   ]
