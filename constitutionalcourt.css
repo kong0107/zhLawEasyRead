@@ -8,6 +8,10 @@
   margin-bottom: 0.5em;
 }
 
+a.LER_artName, .LER_artNum {
+    font-size: 150%;
+}
+
 object {
   display: none;
 }

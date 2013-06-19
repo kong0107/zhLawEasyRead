@@ -25,17 +25,32 @@
 
 ## Embedded JavaScript for Websites and Blogs
 
+警告：目前僅針對Google Chrome，其餘瀏覽器中幾乎不能運作。
+
 在網頁HTML原始碼中的`</head>`前加入
 ```html
   <script src="pcodes.js"></script>
   <script src="aliases2.js"></script>
   <script src="embedded.js"></script>
 ```
+路徑請自行修改。
 
 （非必要）針對`.LER_lawName`和`.LER_artNum`編輯自己的CSS規則，或是引用本專案中的`embedded.css`
 ```html
   <link rel="stylesheet" type="text/css" href="embedded.css">
 ```
+
+# Disclaimer
+
+甚麼都不負責。
+
+# License
+
+[MIT License](http://en.wikipedia.org/wiki/MIT_License)再加上一條：
+被授權人於出版發行、散布、再授權及販售軟體及軟體的副本時，應於MIT授權條款上方或下方陳述被授權人對於一個以上之公共議題之立場，「或」附上與其立場類似之文章之永久連結。於其軟體再版時，得變更議題與立場。
+
+此軟體此版本設定之公共議題為「性別」，立場為「性解放」，支持十歲以上智識者均得自主與人發生性行為與性交易，「性忠貞」並不是「道德」的一部份。參閱[反守貞地圖．哲學哲學雞蛋糕](http://phiphicake.blogspot.tw/2013/06/blog-post_4.html)
+
 
 ## Google Chrome Extension
 * 進入Chrome的「擴充功能」設定頁面（網址輸入 chrome://extensions/ ），勾選右上角的「開發人員模式」。

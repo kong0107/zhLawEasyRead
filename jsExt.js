@@ -273,7 +273,6 @@ Node.prototype.isDescendantOfTag = function() {
     }
 }();
 
-
 /** 將XML字串轉為NodeList
   * 原本的 DOMParser#parseFromString 必須輸入恰有一根節點的XML，
   * 這裡只是最外面先包一個隨便的標籤，轉完後再求其子節點列表。
@@ -288,6 +287,22 @@ if(!window.parseXMLtoNodeList) {
         }
     }();
 }
+
+/** 將另一物件的所有特性都囊括於己
+  * 未確認 __defineGetter__ 弄出來的那些會發生甚麼事
+  */
+/*Object.prototype.merge = function() {
+    var orig = Object.prototype.merge
+        ? Object.prototype.merge
+        : function() {throw new TypeError("parameter not object");}
+    ;
+    return function(target) {
+        if(arguments.length != 1 || typeof target != "object")
+            return orig.apply(this, arguments);
+        for(var attr in target)
+            this[attr] = target[attr];
+    };
+}();*/
 
 /** 引入JavaScript專用的小函數
  */

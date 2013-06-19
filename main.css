@@ -1,3 +1,10 @@
 .lawArticle {
-  padding: 0 0.15em;
+    padding: 0 0.15em;
+}
+
+.LER_lawName, .LER_artNum  {
+    padding: 0 0.15em;
+    background-color: #eee;
+    border: 1px solid #ccc;
+    font-weight: bold;
 }
