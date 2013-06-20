@@ -270,7 +270,38 @@ Node.prototype.isDescendantOfTag = function() {
                 if(ancestor.tagName == arguments[i]) return true;
         }
         return false;
-    }
+    };
+}();
+
+/** 判斷是否在某節點之前
+  * 比對兩個節點的列祖列宗，遇到相同的話，再看相同之前的那個的兄弟關係。
+  *
+  * 也可以另外宣告下述函數加以利用，但亦有下述難處且不確定其他有同名函數的framework如何設計，故而作罷：
+  * Node.prototype.ancestors		需決定parentNode是首還是尾
+  * Node.prototype.comparePosition	需決定「在前」是正還是負；還有「不在同一個樹」要回傳啥。
+  * Node.prototype.DFSOrder			DFS的順序來排序即是本需求，但要在結構樹變動時亦隨之更動頗麻煩
+  */
+Node.prototype.isBefore = function() {
+	var orig = Node.prototype.isBefore
+		? Node.prototype.isBefore
+		: function() {throw new TypeError("Argument list must have exactly one node only.");}
+	;
+	return function(node) {
+		if(arguments.length != 1 || !(node instanceof Node)) orig.apply(this, arguments);
+		if(this === node) return false;	///< FireFox 沒有 isSameNode
+		var pos, a, pre;
+		var ancestors = [this];
+		for(a = this.parentNode; a; a = a.parentNode) ancestors.push(a);
+		if(ancestors.indexOf(node) != -1) return false;
+		for(pre = node, a = pre.parentNode; a; pre = a, a = a.parentNode) 
+			if((pos = ancestors.indexOf(a)) >= 0) break;
+		if(!a) return false; /// 亦即沒有相同的祖宗
+		if(!pos) return true;
+		for(var s = a.firstChild; s; s = s.nextSibling) {
+			if(s === pre) return false;
+			if(s === ancestors[pos-1]) return true;
+		}
+	};
 }();
 
 /** 將XML字串轉為NodeList
@@ -286,6 +317,17 @@ if(!window.parseXMLtoNodeList) {
             return domParser.parseFromString("<xml>" + xml + "</xml>", "text/xml").lastChild.childNodes;
         }
     }();
+}
+
+/** 用innerHTML取得NodeList
+  * 非正規的方法，而且似乎會一直產生沒用到的DIV；本專案尚無用到。
+  */
+if(window.createNodeList) {
+	createNodeList = function(html) {
+		var pseudo = document.createElement("DIV");
+		pseudo.innerHTML = html;
+		return pseudo.childNodes;
+	};
 }
 
 /** 將另一物件的所有特性都囊括於己

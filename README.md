@@ -7,8 +7,8 @@
 亦含一Google瀏覽器外掛，可於瀏覽政府網站時：
 * 自動將法規中的條項款目改為易於閱讀的文字代號，例如：
     * 「民法第一千零七十六條之一第一項第二款」將變為「民法§1076-1 I(2)」；
-    * 「立法院公報第八十卷第二十二期第一０七頁」將變為「立法院公報vol. 80, no. 22, p.107」。
-    * 條文中的「前條第一項第三款至第六款」則會變為「前條 I(3)至(6)」
+    * 「立法院公報第八十卷第二十二期第一０七頁」將變為「立法院公報vol. 80, no. 22, p.107」（待修復）
+    * 條文中的「前條第一項第三款至第六款」則會變為「前條 I(3)至(6)」（待修復）
 * 將下列網站稍做排版，使易於閱讀：
     * [大法官解釋](http://www.judicial.gov.tw/constitutionalcourt/p03.asp)
     * [立法院法律系統](http://lis.ly.gov.tw/lgcgi/lglaw)
@@ -16,15 +16,21 @@
 
 ## Examples
 ![Embbed JS](http://images.plurk.com/kAGZ-6RFMjNeKA8ET4PRZDyhD3L.jpg)
-![Legislative Yuan](http://images.plurk.com/kAGZ-MUrLU6fv1v12bIOYlML4b.jpg)
-![Judicial Interpretation](http://images.plurk.com/kAGZ-16lLevTTpEXtHornsBqrXY.jpg)
-
+![Legislative Yuan](http://images.plurk.com/kAGZ-11q1ZjeGxmdJImYNk2Ggvn.jpg)
+![Laws & Regulations Database](http://images.plurk.com/kAGZ-2CW286GQdTnECQx0xKA6Dq.jpg)
+![Judicial Interpretation](http://images.plurk.com/kAGZ-6oa3p19F5dAwNQLhbUR0u.jpg)
 
 # Installation
 按網頁左上方的"ZIP"下載本專案的打包檔，並解壓縮到任意處。
 
-## Embedded JavaScript for Websites and Blogs
+## Google Chrome Extension
+* 進入Chrome的「擴充功能」設定頁面（網址輸入 chrome://extensions/ ），勾選右上角的「開發人員模式」。
+* 點選剛剛冒出來的「載入未封裝擴充功能」按鈕。
+* 選取剛剛解壓縮出來的資料夾。
+* 網址列右邊出現「§#」圖示的話就是成功了，可以按看看。
+* 解壓縮出來的資料夾與檔案不要刪掉。
 
+## Embedded JavaScript for Websites and Blogs
 警告：目前僅針對Google Chrome，其餘瀏覽器中幾乎不能運作。
 
 在網頁HTML原始碼中的`</head>`前加入
@@ -41,23 +47,19 @@
 ```
 
 # Disclaimer
-
 甚麼都不負責。
 
 # License
-
 [MIT License](http://en.wikipedia.org/wiki/MIT_License)再加上一條：
-被授權人於出版發行、散布、再授權及販售軟體及軟體的副本時，應於MIT授權條款上方或下方陳述被授權人對於一個以上之公共議題之立場，「或」附上與其立場類似之文章之永久連結。於其軟體再版時，得變更議題與立場。
+被授權人於出版發行、散布、再授權及販售軟體及軟體的副本時，應於MIT授權條款上方或下方加上此規則，並：
+* 陳述被授權人對於一個以上之公共議題之立場；或
+* 附上與其立場類似之文章之永久連結。
 
 此軟體此版本設定之公共議題為「性別」，立場為「性解放」，支持十歲以上智識者均得自主與人發生性行為與性交易，「性忠貞」並不是「道德」的一部份。參閱[反守貞地圖．哲學哲學雞蛋糕](http://phiphicake.blogspot.tw/2013/06/blog-post_4.html)
 
-
-## Google Chrome Extension
-* 進入Chrome的「擴充功能」設定頁面（網址輸入 chrome://extensions/ ），勾選右上角的「開發人員模式」。
-* 點選剛剛冒出來的「載入未封裝擴充功能」按鈕。
-* 選取剛剛解壓縮出來的資料夾。
-* 網址列右邊出現「§#」圖示的話就是成功了，可以按看看。
-* 解壓縮出來的資料夾與檔案不要刪掉。
+## License Explanation
+* 於其軟體再版時，得變更議題與立場、連結。
+* 軟體之使用與修改者，無須同意原軟體授權條款中基於本規則而對特定議題表態之立場。
 
 # Notices
 * 本專案現有「網站內嵌JavaScript」和「Google瀏覽器外掛」兩種功能，會一直維持可獨立運作，只是由於（將）會有共用程式碼，所以放在一起。

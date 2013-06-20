@@ -5,6 +5,8 @@ LER = function(){
     var rules = [];     ///< 比對規則與替換函數
     var lawInfos = {};  ///< 法規資訊，包含暱稱資訊
     var skippingTags = ["SCRIPT", "CODE", "TEXTAREA"]; ///< 也許應該設計成CSS selector的機制
+		
+	var lawNameNodes = []; ///< 記下比對到法規名稱後產生的節點，用於判斷條號是屬於哪個法規
     
     /// 法規名稱比對
     rules.push(function() {
@@ -29,7 +31,7 @@ LER = function(){
           */
         for(var i = 0; i < pcodes.length; ++i) {
             var name = pcodes[i].name;
-            //if(name.length > 64) continue; ///< 也許本專案有機會讓關心國際法的網友用到....
+            if(name.length > 32) continue; ///< 但也許本專案有機會讓關心國際法的網友用到....
             if(/[A-Za-z，、「」]/.test(name)) continue;
             lawInfos[name] = {pcode: pcodes[i].PCode};
             lawNames.push(name.replace(/([\.\(\)])/g, "\$1")); ///< 加上脫逸字，因需轉成RegExp
@@ -65,9 +67,15 @@ LER = function(){
                 node.setAttribute('href', "http://law.moj.gov.tw/LawClass/LawAll.aspx?PCode=" + info.pcode);
             }
             else node = document.createElement("SPAN");
-            node.setAttribute('title', info.fullName ? info.fullName : match);
+			var fullName = info.fullName ? info.fullName : match;
+            node.setAttribute('title', fullName);
             node.className = "LER_lawName";
             node.appendChild(document.createTextNode(match));
+			lawNameNodes.push({
+				info: info, 
+				lawName: fullName, ///< 資料量的考量，目前對於沒有簡稱的條文是不另外存其名稱的
+				node: node
+			});
             return node;
         };
         
@@ -84,16 +92,28 @@ LER = function(){
         var pattern = new RegExp(retArticle, 'g');    
         var replace = function(match, num1, sub, num2, index, input) {
             if(input.isDescendantOfTag(skippingTags)) return [document.createTextNode(match)];
-            var text = "§" + parseInt(num1);
-            if(typeof num2 != "undefined") text += "-" + parseInt(num2);
+            num1 = parseInt(num1);
+			var text = "§" + num1;
+			var flno = num1;
+            if(typeof num2 != "undefined") {			
+				num2 = parseInt(num2);
+				text += "-" + num2;
+				flno += "." + num2;
+			}
+			
+			var pos, lawNode;
+			for(pos = 0; pos < lawNameNodes.length; ++pos) 
+				if(!lawNameNodes[pos].node.isBefore(input)) break;
+			if(pos) lawNode = lawNameNodes[pos - 1];
+			
             var node;
             if(!input.isDescendantOfTag('A')) {
                 node = document.createElement('A');
                 node.setAttribute('target', '_blank');
-                //node.setAttribute('href', "http://law.moj.gov.tw/LawClass/LawSingle.aspx?Pcode=" + pcode + "&FLNO=" + flno);
+				if(pos) node.setAttribute('href', "http://law.moj.gov.tw/LawClass/LawSingle.aspx?Pcode=" + lawNode.info.pcode + "&FLNO=" + flno);
             }
             else node = document.createElement("SPAN");
-            node.setAttribute('title', match);
+            node.setAttribute('title', (pos ? (lawNode.lawName + "\n") : "") + match);
             node.className = "LER_artNum";
             node.appendChild(document.createTextNode(text));
             return node;
