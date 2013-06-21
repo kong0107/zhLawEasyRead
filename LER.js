@@ -4,9 +4,15 @@
 LER = function(){
     var rules = [];     ///< 比對規則與替換函數
     var lawInfos = {};  ///< 法規資訊，包含暱稱資訊
-    var skippingTags = ["SCRIPT", "CODE", "TEXTAREA"]; ///< 也許應該設計成CSS selector的機制
-		
 	var lawNameNodes = []; ///< 記下比對到法規名稱後產生的節點，用於判斷條號是屬於哪個法規
+    var skippingTags = ["SCRIPT", "CODE", "TEXTAREA"]; ///< 也許應該設計成CSS selector的機制
+        
+    var debugOldTime = (new Date).getTime();
+    var debug = function(str) {
+        var debugNewTime = (new Date).getTime();
+        console.log("LER (" + (debugNewTime - debugOldTime) + "): " + str);   ///< comment this line to disable debug messages.
+        debugNewTime = debugOldTime;    
+    };
     
     /// 法規名稱比對
     rules.push(function() {
@@ -71,11 +77,11 @@ LER = function(){
             node.setAttribute('title', fullName);
             node.className = "LER_lawName";
             node.appendChild(document.createTextNode(match));
-			lawNameNodes.push({
+			/*lawNameNodes.push({
 				info: info, 
 				lawName: fullName, ///< 資料量的考量，目前對於沒有簡稱的條文是不另外存其名稱的
 				node: node
-			});
+			});*/
             return node;
         };
         
@@ -101,19 +107,20 @@ LER = function(){
 				flno += "." + num2;
 			}
 			
-			var pos, lawNode;
+			/*var pos, lawNode;
 			for(pos = 0; pos < lawNameNodes.length; ++pos) 
 				if(!lawNameNodes[pos].node.isBefore(input)) break;
-			if(pos) lawNode = lawNameNodes[pos - 1];
+			if(pos) lawNode = lawNameNodes[pos - 1];*/
 			
             var node;
             if(!input.isDescendantOfTag('A')) {
                 node = document.createElement('A');
                 node.setAttribute('target', '_blank');
-				if(pos) node.setAttribute('href', "http://law.moj.gov.tw/LawClass/LawSingle.aspx?Pcode=" + lawNode.info.pcode + "&FLNO=" + flno);
+				/*if(pos) node.setAttribute('href', "http://law.moj.gov.tw/LawClass/LawSingle.aspx?Pcode=" + lawNode.info.pcode + "&FLNO=" + flno);*/
             }
             else node = document.createElement("SPAN");
-            node.setAttribute('title', (pos ? (lawNode.lawName + "\n") : "") + match);
+            node.setAttribute('title', match);
+            //node.setAttribute('title', (pos ? (lawNode.lawName + "\n") : "") + match);
             node.className = "LER_artNum";
             node.appendChild(document.createTextNode(text));
             return node;
@@ -125,10 +132,14 @@ LER = function(){
         debug: function(varName) {return eval(varName);},
         skippingTags: skippingTags, ///< 要讓使用者能夠自己設定要跳過的規則
         parseAll: function() {
+            var timer = 
+            debug("parseAll");
             for(var i = 0; i < rules.length; ++i) {
                 document.body.replaceChildren(rules[i].pattern, rules[i].replace, skippingTags, true);
+                debug("rule #" + i + " finished.");
             }
             document.body.joinTexts();
+            debug("all rules finished.");
         }
     };
 }();
