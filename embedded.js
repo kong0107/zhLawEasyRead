@@ -11,6 +11,8 @@ LER = {
   retNumber: "[\\d零一二三四五六七八九十百千]+",
   retElement: "第(?:%number%)條(?:之(?:%number%))?",
   retElements: "not supported",
+  
+  startTime: (new Date).getTime(),
 
   init: function(){
     for(var i = 0; i < pcodes.length; ++i) {
@@ -29,7 +31,9 @@ LER = {
     if(window.onload) this.onload = window.onload;
     window.onload = function() {
       LER.onload();
+	  console.log("It costs " + ((new Date).getTime() - LER.startTime) + " milliseconds to get ready.");
       LER.parse(document.body);
+	  console.log("`embedded.js` spnet " + ((new Date).getTime() - LER.startTime) + " milliseconds to parse all.");
     };
 
     this.inited = true;
