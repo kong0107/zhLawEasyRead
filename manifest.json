@@ -1,23 +1,30 @@
 {
 "name": "zhLawEasyRead",
+"version": "0.3.5",
 "manifest_version": 2,
-"version": "0.3.4",
 "description": "Replace chinese words of sequence number of law articles into arabic or roman numerals.",
-"permissions": [
-	"contextMenus", "tabs"
-],
-"icons" : {
-	"128": "icon.png"
-},
-"background": {
-	"scripts": ["background.js"]
-},
+"icons" : {"128": "icon.png"},
+"options_page": "options.html",
 "browser_action": {
 	"default_icon": "icon.png",
 	"default_title": "法令易讀器",
 	"default_popup": "popup.html"
 },
 "content_scripts": [
+	{
+		"matches": ["<all_urls>"],
+		"exclude_matches": [
+			"http://law.moj.gov.tw/Eng/*"
+		],
+		"css": ["main.css"],
+		"js": [
+            "parseInt.js",
+			"pcodes.js",
+			"aliases.js",
+			"LER.js"
+		],
+        "all_frames": true
+	},
 	{
 		"matches": ["http://www.judicial.gov.tw/constitutionalcourt/p03_01.asp*"],
 		"css": ["constitutionalcourt.css"],
@@ -34,47 +41,10 @@
 		"js": ["ly.js"]
 	},
 	{
-		"matches": [
-			"*://localhost/*"
-		],
-		"css": ["main.css"],
-		"js": [
-			"functions.js",
-			"pcodes.js",
-			"aliases.js",
-			"parseAndReplace.js"
-		]
-	},
-	{
-		"matches": [
-			"file:///*",
-			"*://*.gov.tw/*",
-			"*://*.lawbank.com.tw/*"
-		],
-		"exclude_matches": [
-			"http://law.moj.gov.tw/Eng/*"
-		],
-		"css": ["main.css"],
-		"js": [
-			"pcodes.js",
-			"aliases.js",
-			"LER.js",
-			"auto.js"
-		]
-	},
-	{
-		"matches": [
-			"file:///*"
-		],
-		"exclude_matches": [
-			"http://law.moj.gov.tw/Eng/*"
-		],
-		"css": ["embedded.css"],
-		"js": [
-			"pcodes.js",
-			"aliases.js",
-			"embedded.js"
-		]
+		"matches": ["<all_urls>"],
+		"js": ["auto.js"],
+        "run_at": "document_idle",
+        "all_frames": true
 	}
 ]
 }

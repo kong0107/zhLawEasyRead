@@ -1,6 +1,3 @@
-/**
-  * 尚待確認：速度門檻是法規數量還是演算法？
-  */
 LER = function(){
     var skippingTags = ["SCRIPT", "CODE", "TEXTAREA"]; ///< 也許應該設計成CSS selector的機制
     var rules = [];
@@ -86,7 +83,7 @@ LER = function(){
         return defaultLaw = (typeof arg == "string") ? lawInfos[arg] : arg;
     };
 
-    
+
     /** 比對的規則
       * 使用匿名函數設定初始值並回傳物件給rules.push
       * 實際push進入規則陣列的物件包含三個屬性：
@@ -126,11 +123,11 @@ LER = function(){
             if(typeof lawInfos[name] == "undefined")
                 throw new ReferenceError("law name " + name + " doesn't exist.");
             lawInfos[nick] = lawInfos[name]; ///< 指到同一個物件
-            
+
             /// 之後也許可以用暱稱來做點什麼...
             //if(!lawInfos[name].nicks) lawInfos[name].nicks = [];
             //lawInfos[name].nicks.push(nick);
-            
+
             lawNames.push(nick);
         }
         /// 由長至短排列（以避免遇到「刑法施行法」卻比對到「刑法」）
@@ -158,7 +155,7 @@ LER = function(){
 
     /** 條號文字替換
       * 僅支援單一條號
-      * 
+      *
       * 支援情形
       * * 第 二 條 之 1
       * * 第 2 條 之 一
@@ -188,10 +185,10 @@ LER = function(){
                 text += "-" + num2;
                 flno += "." + num2;
             }
-            
+
             /// 處理預設法規。機制參閱此處變數宣告之處
-            var law;// = (isImmediateAfterLaw && match.index == 0 || !defaultLaw) ? lastFoundLaw : defaultLaw;
-            debug("match.index = " + match.index + "; isImmediateAfterLaw = " + isImmediateAfterLaw);
+            var law = (isImmediateAfterLaw && match.index == 0 || !defaultLaw) ? lastFoundLaw : defaultLaw;
+            /*debug("match.index = " + match.index + "; isImmediateAfterLaw = " + isImmediateAfterLaw);
             if(isImmediateAfterLaw && match.index == 0) {
                 debug(text + " immediate after");
                 law = lastFoundLaw;
@@ -202,9 +199,9 @@ LER = function(){
             }
             else {
                 debug(text + " use last found " + !!lastFoundLaw);
-                law = lastFoundLaw;                
-            }
-            
+                law = lastFoundLaw;
+            }*/
+
             var node;
             if(inSpecial != 'A' && !!law) {
                 node = document.createElement('A');
@@ -224,80 +221,10 @@ LER = function(){
     }());
 
     return {
-        debug: function(varName) {return eval(varName);},
-        skippingTags: skippingTags, ///< 要讓使用者能夠自己設定要跳過的規則
+        skippingTags: skippingTags,
         setDefaultLaw: setDefaultLaw,
         lawInfos: lawInfos,
-        parseAll: function() {
-            debug("parseAll");
-            parseElement(document.body);
-            debug("all rules finished.");
-        }
+        parse: parseElement,
+        debug: function(varName) {return eval(varName);}
     };
 }();
-
-if(parseInt("一千一百十一")!=1111) { ///< 如果還不支援，才需要宣告
-    parseInt = function() {
-        var orig = parseInt;
-        /**
-         *  命名規則：
-         *  * one:  數字「一」
-         *  * ones: 個位數
-         *  * tens: 十進制
-         *  * wans: 萬進制
-         *  * re:   正規表示式
-         */
-
-        var onesH = [
-            "０零○〇", "一壹ㄧ",
-            "二貳兩", "三參", "四肆", "五伍",
-            "六陸", "七柒", "八捌", "九玖"
-        ]; /// "兩"字當量詞而被意外傳入時，後面會處理
-        var ones = onesH.join("");
-        var tens = "十百千拾佰仟";
-        var wans = "萬億兆京垓秭穰溝澗正載極"; ///< 參閱WikiPedia條目〈中文數字〉
-
-        var reOnesH = [];
-        for(var i = 0; i < 10; ++i) reOnesH[i] = new RegExp("["+onesH[i]+"]", "g");
-        var reOnes = new RegExp("[" + ones + "]", "g");
-        var reTens = new RegExp("[" + tens + "]", "g");
-        var reWans = new RegExp("([^負" + wans + "]+)([" + wans + "])", "g");
-
-        var rePreOne = new RegExp("^([" + tens + wans + "])", "g"); ///< 句首補「一」
-        var reInnerOne = new RegExp("([負零" + tens + wans + "])([" + tens + "])", "g"); ///< 處理如「二萬零十五」
-        var reAllOnes = new RegExp("^負?["+ones+"]+$", "g");
-        var reNonSupported = new RegExp("[^負"+ones+tens+wans+"]", "g");
-
-        return function() {
-            var result = orig.apply(this, arguments);
-            if(!isNaN(result)) return result; ///< 如果是舊函數已支援的情形，那就回傳就函數的結果
-            var str = arguments[0].replace(reNonSupported, ""); /// 移除不支援的字（包含 \d 喔）
-            str = str.replace(/兩$/, ""); /// 移除末尾的「兩」字
-            reAllOnes.lastIndex = 0;
-            if(reAllOnes.test(str)) { /// 若均是零到九，直接一對一轉換
-                str = str.replace(/^負/, "-");
-                for(var i = 0; i < 10; ++i) {
-                    reOnesH[i].lastIndex = 0;
-                    str = str.replace(reOnesH[i], String(i));
-                }
-                return orig(str, 10);
-            }
-            /// 若有零到九以外的文字，才處理這裡
-            reOnes.lastIndex = reTens.lastIndex = reWans.lastIndex = 0;
-            rePreOne.lastIndex = reInnerOne.lastIndex = 0;
-            str = str.replace(rePreOne, "一$1").replace(reInnerOne, "$1一$2");
-            str = str.replace(reWans, function(match, belowWan, wan) {
-                return "+(" + belowWan + ")*Math.pow(10000," + (wans.indexOf(wan)+1) + ")"
-            }).replace(reTens, function(match) {
-                return "*" + [10, 100, 1000][tens.indexOf(match)%3];
-            }).replace(reOnes, function(match) {
-                for(var i = 0; i < 10; ++i)
-                    if(onesH[i].indexOf(match) >= 0)
-                        return "+" + i;
-            });
-            str = str.replace(/^負(.*)/, "-($1)");
-            try { return eval(str); }
-            catch(e) {return NaN;}
-        };
-    }();
-}

@@ -1,17 +1,13 @@
-.lawArticle {
+a.LER_artName, .LER_artNum  {
   font-size: inherit;
 }
 
-.t1 {
+.t1 { /* 區塊內文 */
   line-height: 175%;
   text-indent: 2em;
   margin-bottom: 0.5em;
 }
 
-a.LER_artName, .LER_artNum {
-    font-size: 150%;
-}
-
-object {
+object { /* 上方的Flash動畫 */
   display: none;
 }

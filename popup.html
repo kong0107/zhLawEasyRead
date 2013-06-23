@@ -1,19 +1,8 @@
 <!doctype html>
-<html>
+<html lang="zh-TW">
   <head>
-    <meta http-equiv="content-type" content="text/html; charset=utf-8">
-    <title>Popup</title>
+    <meta charset="utf-8">
     <base target="_blank" />
-    <style>
-      body {
-        min-width: 300px;
-      }
-      iframe {
-        display: block;
-        border: 0;
-        height: 2em;
-      }
-    </style>
     <!-- JavaScript and HTML must be in separate files for security. -->
     <script src="popup.js"></script>
   </head>
@@ -25,7 +14,7 @@
           <input type="text" name="k1" />
           <input type="hidden" name="p" value="A" />
           <input type="hidden" name="t" value="E1F1A1A2" />
-          <input type="submit" value="搜尋法規" />
+          <input type="submit" value="蒐法規" />
         </form>
       </li>
       <li><a href='http://jirs.judicial.gov.tw/'>[司法院]法學資料檢索</a></li>
@@ -38,7 +27,7 @@
       </li>
       <li>
         <a href='http://lis.ly.gov.tw/lgcgi/lglaw'>[立法院]法律系統</a>
-        <!--iframe src="./popup_big5ForLy.html"></iframe-->
+        <iframe style="height: 1.5em; border: 0;" src="./popup_big5ForLy.html"></iframe>
       </li>
       <li><a href='http://npl.ly.gov.tw/do/www/lawTrack'>[立法院]法案追蹤</a></li>
       <li><a href='http://www.president.gov.tw/Default.aspx?tabid=84'>[總統府]公報</a></li>
