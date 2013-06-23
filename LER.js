@@ -3,12 +3,13 @@ LER = function(){
     var rules = [];
     var lawInfos = {};  ///< 法規資訊，包含暱稱資訊
 
-    if(false) { ///< set to true to enable debug messages
+    if(true) { ///< set to true to enable debug messages
         var debugStartTime = (new Date).getTime();
         var debugOldTime = debugStartTime;
         var debug = function(str) {
+            str = str ? (": " + str) : "";
             var debugNow = (new Date).getTime();
-            console.log("LER (" + (debugNow - debugOldTime) + "/" + (debugNow - debugStartTime) + "): " + str);
+            console.log("LER (" + (debugNow - debugOldTime) + "/" + (debugNow - debugStartTime) + ")" + str);
             debugOldTime = debugNow;
         };
     }
@@ -152,26 +153,92 @@ LER = function(){
 
         return {pattern: pattern, replace: replace, minLength: 2}; ///< 最短的是「民法」
     }());
-
-    /** 條號文字替換
-      * 僅支援單一條號
+    
+    
+    /** 條號比對－－支援多條文
+      * 僅處理條文中提及多條文時的格式，例如行訴§18的「第十七條、第二十條至第二十二條、第二十八條第一項、第三項、第二十九條至第三十一條」
+      * 「類」是為了支援所得稅法§14
       *
-      * 支援情形
-      * * 第 二 條 之 1
-      * * 第 2 條 之 一
-      * * 第 2-1 條   #=> 全國法規資料庫
-      * * 第 二-1 條  #=> 剛好可以，實際未見
-      *
-      * 不支援的有
-      * * 第 2 -1 條  #=> 未見，故省資源而不做空白字元之判斷
-      * * 第 2- 1 條  #=> 未見，故省資源而不做空白字元之判斷
-      * * 第二之一條
-      * * 第 二 條 - 1
+      * 這裡不處理：
+      * * 全國法規資料庫的 "第 15-1 條"
+      * * 立法院法律系統中，法規版本列表的 "第616之1, 624之1至624之8條"
       */
     rules.push(function() {
-        var retNumber = "[\\d零一二三四五六七八九十百千]+";
-        var retArticle = "第\\s*(%number%)(-(\\d+))?\\s*條(\\s*之\\s*(%number%))?".replace(/%number%/g, retNumber);
-        var pattern = new RegExp(retArticle, 'g');
+        var reNumber = "[\\d零一二三四五六七八九十百千]+";
+        var reTypes = "[條項類款目]";
+        var reSplitter = "[、,或及至]";
+        var rePart = "(%number%)(%type%)(之(%number%))?".replace(/%number%/g, reNumber).replace(/%type%/, reTypes);
+        var pattern = "(第" + rePart + ")+";
+        pattern = pattern  + "(" + reSplitter + pattern + ")*";
+        pattern = new RegExp(pattern, 'g');
+        rePart = new RegExp(rePart, 'g');
+        //reTypes = new RegExp(reTypes, 'g');
+        reSplitter = new RegExp(reSplitter, 'g');
+        //reNumber = new RegExp(reNumber, 'g');
+        
+        var replace = function(match, inSpecial) {
+            var text = "";  ///< 簡化後的文字
+            var SNo = "";   ///< 連結            
+            reSplitter.lastIndex = 0;
+            
+            // 例如比對到 "第十八條之一第一項第九類、第二十六條第二款至第四款"，其執行結果為
+            var parts = match[0].split(reSplitter);        //#=> ["第十八條之一第一項第九類", "第二十六條第二款", "第四款"]
+            var glues = match[0].match(reSplitter);        //#=> [                         "、",               "至"       ]
+            for(var i = 0; i < parts.length; ++i) {
+                var scraps = parts[i].split(/第/g);        //#=> ["", "十八條之一", "一項", "九類"], ["", "二十六條", "二款"], ["", "四款"]
+                for(var j = 1; j < scraps.length; ++j) {
+                    rePart.lastIndex = 0;
+                    var m = rePart.exec(scraps[j]);
+                    var num = parseInt(m[1]);
+                    switch(m[2]) {
+                    case "條":
+                        text += "§" + num;
+                        if(i) SNo += (glues[i-1] == "至") ? "-" : ",";   ///< 處理連接詞
+                        SNo += num;
+                        break;
+                    default:    ///< 之後要處理簡稱，例如「項」是簡記為羅馬數字，但也要允許使用者選擇喜歡的簡記方式
+                        text += "第" + num + m[2];
+                    }
+                    if(m[3]) {  ///< 理論上只在「條」的情況出現
+                        num = parseInt(m[4]);
+                        text += "-" + num;
+                        SNo += "." + num;
+                    }
+                }
+                
+                if(i == parts.length - 1) break;    ///< 處理連接詞
+                text += ((glues[i] == ",") ? "" : " ") + glues[i] + " ";
+            }
+
+            /// 處理預設法規。機制參閱此處變數宣告之處
+            var law = (isImmediateAfterLaw && match.index == 0 || !defaultLaw) ? lastFoundLaw : defaultLaw;
+            isImmediateAfterLaw = false;
+
+            var node;
+            if(inSpecial != 'A' && !!law && SNo) {  ///< 如果是「前條第一款」，那就還不會加上連結
+                node = document.createElement('A');
+                node.setAttribute('target', '_blank');
+                var href = "http://law.moj.gov.tw/LawClass/Law";
+                if(/[,-]/.test(SNo)) href += "SearchNo.aspx?PC=" + law.PCode + "&SNo=" + SNo;   ///< 多條
+                else href += "Single.aspx?Pcode=" + law.PCode + "&FLNO=" + SNo;     ///< 單條
+                node.setAttribute('href', href);
+                node.setAttribute('title', law.name + "\n" + match[0]);
+            }
+            else {
+                node = document.createElement("SPAN");
+                node.setAttribute('title', match[0]);
+            }
+            node.className = "LER_artNum";
+            node.appendChild(document.createTextNode(text));
+            return node;
+        };
+        return {pattern: pattern, replace: replace, minLength: 3}; ///< 最短的是「第一條」
+    }());
+
+    /** 處理到全國法規資料庫的 "第 15-1 條"
+      */
+    rules.push(function() {
+        var pattern = /第\s*(\d+)(-(\d+))?\s*條/g;
         var replace = function(match, inSpecial) {
             var num1 = parseInt(match[1]);
             var text = "§" + num1;
@@ -180,28 +247,8 @@ LER = function(){
                 text += match[2];
                 flno += "." + match[3];
             }
-            else if(match[5]) {    /// 處理一般的「第十五條之一」
-                var num2 = parseInt(match[5]);
-                text += "-" + num2;
-                flno += "." + num2;
-            }
-
             /// 處理預設法規。機制參閱此處變數宣告之處
             var law = (isImmediateAfterLaw && match.index == 0 || !defaultLaw) ? lastFoundLaw : defaultLaw;
-            /*debug("match.index = " + match.index + "; isImmediateAfterLaw = " + isImmediateAfterLaw);
-            if(isImmediateAfterLaw && match.index == 0) {
-                debug(text + " immediate after");
-                law = lastFoundLaw;
-            }
-            else if(defaultLaw) {
-                debug(text + " use default law " + !!defaultLaw);
-                law = defaultLaw;
-            }
-            else {
-                debug(text + " use last found " + !!lastFoundLaw);
-                law = lastFoundLaw;
-            }*/
-
             var node;
             if(inSpecial != 'A' && !!law) {
                 node = document.createElement('A');
@@ -225,6 +272,8 @@ LER = function(){
         setDefaultLaw: setDefaultLaw,
         lawInfos: lawInfos,
         parse: parseElement,
-        debug: function(varName) {return eval(varName);}
+        debug: function(varName) {return eval(varName);},
+        debugTime: function(str) {debug(str);}
     };
 }();
+LER.debugTime("initialization");
