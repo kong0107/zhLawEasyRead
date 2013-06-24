@@ -1,11 +1,8 @@
-﻿if(typeof LER == "object") {
-    if(document.location.pathname == "/LawClass/LawAll.aspx") {
-        var pcode = document.location.href.substr(document.location.href.indexOf('=')+1);
-        for(var i = 0; i < pcodes.length; ++i) {
-            if(pcodes[i].PCode == pcode) {
-                LER.setDefaultLaw(pcodes[i].name);  // 好像有點本末倒置，不過先這樣吧
-            }
-        }
-        
-    }
-}
+﻿/// 判斷「預設法規」
+(function(){
+    if(typeof LER != "object" || !LER.setDefaultLaw) return;
+    var pages = ["All", "Single", "AllPara", "SearchNo", "SearchContent", "History"];
+    var match = document.location.pathname.match(/^\/LawClass\/Law(\w+).aspx/);
+    if(!match || pages.indexOf(match[1]) < 0) return;
+    LER.setDefaultLaw(document.getElementById("Content").getElementsByTagName('A')[1].lastChild.data.replace(/\s/g, ''));
+})();

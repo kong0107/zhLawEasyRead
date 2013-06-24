@@ -4,6 +4,7 @@
 
 一Google瀏覽器外掛，可於瀏覽網站時：
 * 網頁中提到法規名稱或是條文時，將法規名稱與該條號變成連往[全國法規資料庫](http://law.moj.gov.tw/)的連結。
+* 提到大法官解釋時，即連向該號解釋的官方網頁。
 * 將下列網站稍做排版，使易於閱讀：
     * [大法官解釋](http://www.judicial.gov.tw/constitutionalcourt/p03.asp)
     * [立法院法律系統](http://lis.ly.gov.tw/lgcgi/lglaw)
@@ -12,7 +13,7 @@
 警告：部落客於編輯網誌時，請暫時關閉本外掛。
 
 ## Examples
-![Legislative Yuan](http://images.plurk.com/kAGZ-6fkYtgu1BejEXshFvUGHcJ.jpg)
+![Legislative Yuan](http://images.plurk.com/kAGZ-5bvO4HGPifAXwkDU9CAs3y.jpg)
 ![Judicial Interpretation](http://images.plurk.com/kAGZ-5vXMDaSEAUQCW51VJ06k3Z.jpg)
 ![Laws & Regulations Database](http://images.plurk.com/kAGZ-1V1k4UwBowvUXGaOQ0DF6R.jpg)
 
@@ -67,7 +68,7 @@
 * 如為可編輯之純文字框，如 TEXTAREA ，即不會處理。
 
 # Bugs
-* 未確認與WYSIWYG編輯器的相互干擾情形。
+* 未確認與WYSIWYG編輯器的相互干擾情形!!!!
 * 會發生「漩渦鳴人的 §8 尾巴出現了」和「我國的 §3 國道走山事件」
 * 未能運作於[零時政府立法院](http://ly.g0v.tw.jit.su/)、[評律網](http://www.pingluweb.com/)等以AJAX機制更新的內容。
 * 未能順利處理以換行字元或BR標籤來排版的網頁（如[全國法規資料庫](http://law.moj.gov.tw/)及[司法院裁判書查詢](http://jirs.judicial.gov.tw/FJUD/)）。

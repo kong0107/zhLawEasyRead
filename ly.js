@@ -75,3 +75,24 @@ if(!document.referrer
     && document.getElementsByName('LW').length
     && document.getElementsByName('LW')[0].value.replace(/\w|\s/g, '').length
 ) document.getElementsByTagName('FORM')[0].submit();
+
+
+(function(){
+    if(typeof LER != "object" || !LER.setDefaultLaw) return;
+    
+    /// 判斷「預設法規」
+    var title = document.querySelector("font[size]");
+    if(!title) return;
+    if(title.size != 5 && title.size != 4) return;
+    /// 把後面的法規號碼拿掉。「立法理由」那頁沒有lyID，就用正規表示式解決吧～
+    title = title.innerText.replace(/[\s\d\(\)]/g, '');  
+    if(title) LER.setDefaultLaw(title);
+    
+    /** 處理「相關條文」頁面的其他法規
+      * 可參考社維§91-1的該頁：http://lis.ly.gov.tw/lghtml/lawstat/relarti/01183/01183009101.htm
+      */
+    var fonts = document.getElementsByTagName("FONT");
+    for(var i = 2; i < fonts.length; ++i) { ///< 因為第一個是剛剛才處理的預設法規，第二個是字串「被引用條文:」
+        if(/^([^\(]+)\(\d{5}\)$/.test(fonts[i].innerText)) fonts[i].classList.add("LER-defaultLaw");
+    }
+})();

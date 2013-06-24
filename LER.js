@@ -22,6 +22,7 @@ LER = function(){
       */
     var parseElement = function(ele, inSpecial) {
         for(var next, child = ele.firstChild; child; child = next) {
+            if(ele.classList.contains("LER-defaultLaw")) inSpecial = "defaultLaw";
             if(ele.tagName == 'A') inSpecial = 'A';
             next = child.nextSibling; ///< 因為ele.childNodes會變，所以得這樣
             switch(child.nodeType) {
@@ -63,7 +64,7 @@ LER = function(){
         ) {
             /// 每次有比對到時，先把比對位置前面的碎片丟給下一個規則
             result.push.apply(result, parseText(text.substring(pos, match.index), inSpecial, ruleIndex + 1));
-            /// 然後才處理實際比對到的東西（注意match是物件而非字串）
+            /// 然後才處理實際比對到的東西（注意match是物件而非字串；這裡是push一個node而非array）
             result.push(rule.replace(match, inSpecial));
         }
         /// 處理最後一塊碎片
@@ -81,6 +82,7 @@ LER = function(){
     var lastFoundLaw;
     var isImmediateAfterLaw;    ///< 目前判斷此值的機制欠佳...
     var setDefaultLaw = function(arg) {
+        debug("setDefaultLaw " + arg);
         return defaultLaw = (typeof arg == "string") ? lawInfos[arg] : arg;
     };
 
@@ -137,6 +139,7 @@ LER = function(){
 
         var replace = function(match, inSpecial) {
             lastFoundLaw = lawInfos[match[0]];
+            if(inSpecial == "defaultLaw") setDefaultLaw(lastFoundLaw);
             isImmediateAfterLaw = true;
             var node;
             if(inSpecial != 'A') {
@@ -146,7 +149,7 @@ LER = function(){
             }
             else node = document.createElement("SPAN");
             node.setAttribute('title', lastFoundLaw.name);
-            node.className = "LER_lawName";
+            node.className = "LER-lawName";
             node.appendChild(document.createTextNode(match[0]));
             return node;
         };
@@ -164,10 +167,10 @@ LER = function(){
       * * 立法院法律系統中，法規版本列表的 "第616之1, 624之1至624之8條"
       */
     rules.push(function() {
-        var reNumber = "[\\d零一二三四五六七八九十百千]+";
+        var reNumber = "\\s*[\\d零０一二三四五六七八九十百千]+\\s*";
         var reTypes = "[條項類款目]";
         var reSplitter = "[、,或及至]";
-        var rePart = "(%number%)(%type%)(之(%number%))?".replace(/%number%/g, reNumber).replace(/%type%/, reTypes);
+        var rePart = "(%number%)(%type%)(\\s*之(%number%))?".replace(/%number%/g, reNumber).replace(/%type%/, reTypes);
         var pattern = "(第" + rePart + ")+";
         pattern = pattern  + "(" + reSplitter + pattern + ")*";
         pattern = new RegExp(pattern, 'g');
@@ -228,7 +231,7 @@ LER = function(){
                 node = document.createElement("SPAN");
                 node.setAttribute('title', match[0]);
             }
-            node.className = "LER_artNum";
+            node.className = "LER-artNum";
             node.appendChild(document.createTextNode(text));
             return node;
         };
@@ -260,18 +263,46 @@ LER = function(){
                 node = document.createElement("SPAN");
                 node.setAttribute('title', match[0]);
             }
-            node.className = "LER_artNum";
+            node.className = "LER-artNum";
             node.appendChild(document.createTextNode(text));
             return node;
         };
         return {pattern: pattern, replace: replace, minLength: 3}; ///< 最短的是「第一條」
     }());
+    
+    /** 大法官釋字
+      */
+    rules.push(function() {    
+        var reNumber = "\\s*[\\d零０一二三四五六七八九十百千]+\\s*";
+        var pattern = "(本院|司法院)?釋字第?%number%號(、第%number%號)*(解釋(?!文))?";
+        pattern = new RegExp(pattern.replace(/%number%/g, reNumber), 'g');
+        reNumber = new RegExp(reNumber, 'g');
+        var replace = function(match, inSpecial) {         
+            var container = document.createElement("SPAN");
+            container.setAttribute("title", match[0]);            
+            container.className = "LER-jyi-container";
+            var html = "釋";
+            reNumber.lastIndex = 0;
+            var matches = match[0].match(reNumber);
+            for(var i = 0; i < matches.length; ++i) {
+                var num = parseInt(matches[i]);
+                if(i) html += ", ";
+                if(inSpecial == "A") html += num;
+                else html += '<a class="LER-jyi" target="_blank" href="http://www.judicial.gov.tw/constitutionalcourt/p03_01.asp?expno=' + num + '">#' + num + '</a>';
+            }
+            container.innerHTML = html;            
+            return container;
+        };
+        return {pattern: pattern, replace: replace, minLength: 5}; ///< 最短的是「釋字第一號」
+    }());
 
     return {
-        skippingTags: skippingTags,
-        setDefaultLaw: setDefaultLaw,
-        lawInfos: lawInfos,
         parse: parseElement,
+        setDefaultLaw: setDefaultLaw,
+        autoParse: document.body,
+        setAutoParse: function(node) {this.autoParse = node;},
+        //skippingTags: skippingTags,
+        //lawInfos: lawInfos,
         debug: function(varName) {return eval(varName);},
         debugTime: function(str) {debug(str);}
     };

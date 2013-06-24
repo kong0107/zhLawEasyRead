@@ -2,9 +2,10 @@
     padding: 0 0.15em;
 }
 
-.LER_lawName, .LER_artNum  {
+.LER-lawName, .LER-artNum, .LER-jyi-container {
     padding: 0 0.15em;
     background-color: #eee;
     border: 1px solid #ccc;
     font-weight: bold;
 }
+

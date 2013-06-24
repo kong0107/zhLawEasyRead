@@ -1,4 +1,6 @@
 if(typeof LER == "object") {
-    LER.parse(document.body);
-    LER.debugTime("parse all");
+    if(LER.autoParse instanceof Element) {
+        LER.parse(LER.autoParse);
+        LER.debugTime("parse all");
+    }
 }

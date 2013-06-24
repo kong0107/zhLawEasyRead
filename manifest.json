@@ -1,6 +1,6 @@
 {
 "name": "zhLawEasyRead",
-"version": "0.3.6",
+"version": "0.3.7",
 "manifest_version": 2,
 "description": "Replace chinese words of sequence number of law articles into arabic or roman numerals.",
 "icons" : {"128": "icon.png"},
