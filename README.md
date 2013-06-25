@@ -2,8 +2,11 @@
 * a client-side JavaScript for popular browsers and an extension for Google Chrome to parse the contents of webpage to view Taiwan's law articles/websites easier.
 * related with [g0v/laweasyread](https://github.com/g0v/laweasyread) but functions differently and not combined together yet.
 
-一Google瀏覽器外掛，可於瀏覽網站時：
-* 網頁中提到法規名稱或是條文時，將法規名稱與該條號變成連往[全國法規資料庫](http://law.moj.gov.tw/)的連結。
+Google瀏覽器外掛，可於瀏覽網站時：
+* 網頁中提到法規名稱或是條文時：
+    * 將法規名稱加上連往[全國法規資料庫](http://law.moj.gov.tw/)看該法規全文的網頁連結
+    * 將單一法條連向[立法院法律系統](http://lis.ly.gov.tw/lgcgi/lglaw)該條文與相關條文
+    * 將多個法條連向[全國法規資料庫](http://law.moj.gov.tw/)看該些條文
 * 提到大法官解釋時，即連向該號解釋的官方網頁。
 * 將下列網站稍做排版，使易於閱讀：
     * [大法官解釋](http://www.judicial.gov.tw/constitutionalcourt/p03.asp)

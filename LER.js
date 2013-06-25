@@ -14,6 +14,12 @@ LER = function(){
         };
     }
     else var debug = function(){};
+    
+    /// 數字補零
+    var zeroFill = function(num, strlen){ 
+        for(num = num.toString(); num.length < strlen; num = "0" + num);
+        return num;
+    }
 
     /** 2013-06-22開始實作的又一種作法
       * （好啦我知道一直改核心演算法很不好）
@@ -121,6 +127,12 @@ LER = function(){
             lawInfos[name] = pcodes[i]; ///< 理想上只需要編號，但是為了在遇到暱稱時也能顯示全名..
             lawNames.push(name.replace(/([\.\(\)])/g, "\$1")); ///< 加上脫逸字，因需轉成RegExp
         }
+        for(var lyID in lyIDs) {   ///< 唔，目前是用Object的方式，不能像array那樣做
+            var name = lyIDs[lyID];
+            if(lawInfos[name]) lawInfos[name].lyID = lyID;
+            else lawInfos[name] = {name: name, lyID: lyID};
+            lawNames.push(name);
+        }
         for(var nick in aliases) {
             var name = aliases[nick];
             if(typeof lawInfos[name] == "undefined")
@@ -142,7 +154,7 @@ LER = function(){
             if(inSpecial == "defaultLaw") setDefaultLaw(lastFoundLaw);
             isImmediateAfterLaw = true;
             var node;
-            if(inSpecial != 'A') {
+            if(inSpecial != 'A' && lastFoundLaw.PCode) {
                 node = document.createElement('A');
                 node.setAttribute('target', '_blank');
                 node.setAttribute('href', "http://law.moj.gov.tw/LawClass/LawAll.aspx?PCode=" + lastFoundLaw.PCode);
@@ -183,6 +195,7 @@ LER = function(){
             var text = "";  ///< 簡化後的文字
             var SNo = "";   ///< 連結            
             reSplitter.lastIndex = 0;
+            var num1, num2;
             
             // 例如比對到 "第十八條之一第一項第九類、第二十六條第二款至第四款"，其執行結果為
             var parts = match[0].split(reSplitter);        //#=> ["第十八條之一第一項第九類", "第二十六條第二款", "第四款"]
@@ -192,20 +205,20 @@ LER = function(){
                 for(var j = 1; j < scraps.length; ++j) {
                     rePart.lastIndex = 0;
                     var m = rePart.exec(scraps[j]);
-                    var num = parseInt(m[1]);
+                    num1 = parseInt(m[1]);
                     switch(m[2]) {
                     case "條":
-                        text += "§" + num;
+                        text += "§" + num1;
                         if(i) SNo += (glues[i-1] == "至") ? "-" : ",";   ///< 處理連接詞
-                        SNo += num;
+                        SNo += num1;
                         break;
                     default:    ///< 之後要處理簡稱，例如「項」是簡記為羅馬數字，但也要允許使用者選擇喜歡的簡記方式
-                        text += "第" + num + m[2];
+                        text += "第" + num1 + m[2];
                     }
                     if(m[3]) {  ///< 理論上只在「條」的情況出現
-                        num = parseInt(m[4]);
-                        text += "-" + num;
-                        SNo += "." + num;
+                        num2 = parseInt(m[4]);
+                        text += "-" + num2;
+                        SNo += "." + num2;
                     }
                 }
                 
@@ -223,7 +236,12 @@ LER = function(){
                 node.setAttribute('target', '_blank');
                 var href = "http://law.moj.gov.tw/LawClass/Law";
                 if(/[,-]/.test(SNo)) href += "SearchNo.aspx?PC=" + law.PCode + "&SNo=" + SNo;   ///< 多條
-                else href += "Single.aspx?Pcode=" + law.PCode + "&FLNO=" + SNo;     ///< 單條
+                else if(!law.lyID) href += "Single.aspx?Pcode=" + law.PCode + "&FLNO=" + SNo;     ///< 單條
+                else {
+                    //http://lis.ly.gov.tw/lghtml/lawstat/relarti/01183/01183009101.htm
+                    href = "http://lis.ly.gov.tw/lghtml/lawstat/relarti/" + law.lyID + "/" + law.lyID;
+                    href += zeroFill(num1, 4) + zeroFill(num2 ? num2 : 0, 2) + ".htm";
+                }
                 node.setAttribute('href', href);
                 node.setAttribute('title', law.name + "\n" + match[0]);
             }
