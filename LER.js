@@ -1,7 +1,8 @@
 LER = function(){
-    var skippingTags = ["SCRIPT", "CODE", "TEXTAREA"]; ///< 也許應該設計成CSS selector的機制
+    var skippingTags = ["SCRIPT", "CODE", "TEXTAREA", "OPTION", "BUTTON"]; ///< 也許應該設計成CSS selector的機制
     var rules = [];
     var lawInfos = {};  ///< 法規資訊，包含暱稱資訊
+    var counter = 0;
 
     if(true) { ///< set to true to enable debug messages
         var debugStartTime = (new Date).getTime();
@@ -34,6 +35,12 @@ LER = function(){
             switch(child.nodeType) {
             case 1: ///< Node.ELEMENT_NODE
                 if(skippingTags.indexOf(child.tagName) >= 0) break;
+                if(/(^| )LER(-| |$)/.test(child.className)) break;  ///< 如果是已經處理過的，就不用再處理
+                if((child.tagName == "FRAME" || child.tagName == "IFRAME")
+                    && child.contentDocument
+                    && child.contentDocument.domain == document.domain
+                    && child.contentDocument.readyState == "complete"
+                ) child = child.contentDocument.body;
                 parseElement(child, inSpecial);
                 break;
             case 3: ///< Node.TEXT_NODE
@@ -150,6 +157,7 @@ LER = function(){
         var pattern = new RegExp(lawNames.join('|'), 'g');
 
         var replace = function(match, inSpecial) {
+            ++counter;
             lastFoundLaw = lawInfos[match[0]];
             if(inSpecial == "defaultLaw") setDefaultLaw(lastFoundLaw);
             isImmediateAfterLaw = true;
@@ -192,6 +200,7 @@ LER = function(){
         //reNumber = new RegExp(reNumber, 'g');
         
         var replace = function(match, inSpecial) {
+            ++counter;
             var text = "";  ///< 簡化後的文字
             var SNo = "";   ///< 連結            
             reSplitter.lastIndex = 0;
@@ -261,6 +270,7 @@ LER = function(){
     rules.push(function() {
         var pattern = /第\s*(\d+)(-(\d+))?\s*條/g;
         var replace = function(match, inSpecial) {
+            ++counter;
             var num1 = parseInt(match[1]);
             var text = "§" + num1;
             var flno = num1;
@@ -295,7 +305,8 @@ LER = function(){
         var pattern = "(本院|司法院)?釋字第?%number%號(、第%number%號)*(解釋(?!文))?";
         pattern = new RegExp(pattern.replace(/%number%/g, reNumber), 'g');
         reNumber = new RegExp(reNumber, 'g');
-        var replace = function(match, inSpecial) {         
+        var replace = function(match, inSpecial) {   
+            ++counter;      
             var container = document.createElement("SPAN");
             container.setAttribute("title", match[0]);            
             container.className = "LER-jyi-container";
@@ -315,7 +326,12 @@ LER = function(){
     }());
 
     return {
-        parse: parseElement,
+        //parse: parseElement,
+        parse: function() {
+            this.counter = 0;
+            parseElement.apply(this, arguments);
+            debug(counter + " has been rendered");
+        },
         setDefaultLaw: setDefaultLaw,
         autoParse: document.body,
         setAutoParse: function(node) {this.autoParse = node;},

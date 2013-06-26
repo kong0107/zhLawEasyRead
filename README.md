@@ -7,6 +7,7 @@ Google瀏覽器外掛，可於瀏覽網站時：
     * 將法規名稱加上連往[全國法規資料庫](http://law.moj.gov.tw/)看該法規全文的網頁連結
     * 將單一法條連向[立法院法律系統](http://lis.ly.gov.tw/lgcgi/lglaw)該條文與相關條文
     * 將多個法條連向[全國法規資料庫](http://law.moj.gov.tw/)看該些條文
+* 亦能運作於[零時政府立法院](http://ly.g0v.tw.jit.su/)、[評律網](http://www.pingluweb.com/)等以AJAX機制更新的內容（但需手動觸發）。
 * 提到大法官解釋時，即連向該號解釋的官方網頁。
 * 將下列網站稍做排版，使易於閱讀：
     * [大法官解釋](http://www.judicial.gov.tw/constitutionalcourt/p03.asp)
@@ -66,15 +67,16 @@ Google瀏覽器外掛，可於瀏覽網站時：
 
 # Notices
 * 全國法規資料庫有收錄的均會加上連結－－除非原本已經是連結。
+* 動態讀取的網頁－－如Facebook和[零時政府立法院](http://ly.g0v.tw.jit.su/)、[評律網](http://www.pingluweb.com/)）－－不會自動轉換，但是可以手動按下左下角的黑底文字再次分析內文。
+* 如為可編輯之純文字框，如 TEXTAREA ，即不會處理。列表見`LER.js`的`skippingTags`。
 * 「網站內嵌JavaScript」部分暫停開發，有興趣者請參考 `embedded.*`。
+* 在內嵌其他網域的框架時（如Facebook的留言或按讚外掛），會有瀏覽器警告。
 * Google說「需支付一次性的開發人員註冊費 US$5.00」，所以（還）沒有放在「Chrome 線上應用程式商店」。
-* 如為可編輯之純文字框，如 TEXTAREA ，即不會處理。
 
 # Bugs
-* 未確認與WYSIWYG編輯器的相互干擾情形!!!!
+* 可能與WYSIWYG編輯器的相互干擾!!!!
 * 會發生「漩渦鳴人的 §8 尾巴出現了」和「我國的 §3 國道走山事件」
-* 未能運作於[零時政府立法院](http://ly.g0v.tw.jit.su/)、[評律網](http://www.pingluweb.com/)等以AJAX機制更新的內容。
-* 未能順利處理以換行字元或BR標籤來排版的網頁（如[全國法規資料庫](http://law.moj.gov.tw/)及[司法院裁判書查詢](http://jirs.judicial.gov.tw/FJUD/)）。
+* 未能妥善處理以換行字元或BR標籤來排版的網頁（如[全國法規資料庫](http://law.moj.gov.tw/)及[司法院裁判書查詢](http://jirs.judicial.gov.tw/FJUD/)）。
 
 # Development
 
