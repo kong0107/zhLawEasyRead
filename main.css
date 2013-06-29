@@ -2,12 +2,17 @@
     padding: 0 0.15em;
 }
 
-.LER-lawName, .LER-artNum, .LER-jyi-container {
+.LER-lawName, 
+.LER-artNum, 
+.LER-jyi-container, 
+.LER-court ,
+.LER-trialNum {
     padding: 0 0.15em;
     background-color: #eee;
     border: 1px solid #ccc;
     font-weight: bold;
 }
+
 
 .LER-fixed {
     position: fixed;

@@ -15,9 +15,9 @@ LER = function(){
         };
     }
     else var debug = function(){};
-    
+
     /// 數字補零
-    var zeroFill = function(num, strlen){ 
+    var zeroFill = function(num, strlen){
         for(num = num.toString(); num.length < strlen; num = "0" + num);
         return num;
     }
@@ -98,7 +98,12 @@ LER = function(){
         debug("setDefaultLaw " + arg);
         return defaultLaw = (typeof arg == "string") ? lawInfos[arg] : arg;
     };
-
+    
+    /** 處理法院與裁判的對應
+      * 原理同上，只是暫不處理「預設法院」這部分
+      * （之後要處理裁判書中的「本院」其他裁判時應該還是會需要處理）
+      */
+    var lastFoundCourt;    
 
     /** 比對的規則
       * 使用匿名函數設定初始值並回傳物件給rules.push
@@ -176,8 +181,8 @@ LER = function(){
 
         return {pattern: pattern, replace: replace, minLength: 2}; ///< 最短的是「民法」
     }());
-    
-    
+
+
     /** 條號比對－－支援多條文
       * 僅處理條文中提及多條文時的格式，例如行訴§18的「第十七條、第二十條至第二十二條、第二十八條第一項、第三項、第二十九條至第三十一條」
       * 「類」是為了支援所得稅法§14
@@ -198,14 +203,14 @@ LER = function(){
         //reTypes = new RegExp(reTypes, 'g');
         reSplitter = new RegExp(reSplitter, 'g');
         //reNumber = new RegExp(reNumber, 'g');
-        
+
         var replace = function(match, inSpecial) {
             ++counter;
             var text = "";  ///< 簡化後的文字
-            var SNo = "";   ///< 連結            
+            var SNo = "";   ///< 連結
             reSplitter.lastIndex = 0;
             var num1, num2;
-            
+
             // 例如比對到 "第十八條之一第一項第九類、第二十六條第二款至第四款"，其執行結果為
             var parts = match[0].split(reSplitter);        //#=> ["第十八條之一第一項第九類", "第二十六條第二款", "第四款"]
             var glues = match[0].match(reSplitter);        //#=> [                         "、",               "至"       ]
@@ -230,7 +235,7 @@ LER = function(){
                         SNo += "." + num2;
                     }
                 }
-                
+
                 if(i == parts.length - 1) break;    ///< 處理連接詞
                 text += ((glues[i] == ",") ? "" : " ") + glues[i] + " ";
             }
@@ -297,18 +302,18 @@ LER = function(){
         };
         return {pattern: pattern, replace: replace, minLength: 3}; ///< 最短的是「第一條」
     }());
-    
+
     /** 大法官釋字
       */
-    rules.push(function() {    
+    rules.push(function() {
         var reNumber = "\\s*[\\d零０一二三四五六七八九十百千]+\\s*";
-        var pattern = "(本院|司法院)?釋字第?%number%號(、第%number%號)*(解釋(?!文))?";
+        var pattern = "(本院|司法院)?釋字第?%number%號([、及]第%number%號)*(解釋(?!文))?";
         pattern = new RegExp(pattern.replace(/%number%/g, reNumber), 'g');
         reNumber = new RegExp(reNumber, 'g');
-        var replace = function(match, inSpecial) {   
-            ++counter;      
+        var replace = function(match, inSpecial) {
+            ++counter;
             var container = document.createElement("SPAN");
-            container.setAttribute("title", match[0]);            
+            container.setAttribute("title", match[0]);
             container.className = "LER-jyi-container";
             var html = "釋";
             reNumber.lastIndex = 0;
@@ -319,10 +324,90 @@ LER = function(){
                 if(inSpecial == "A") html += num;
                 else html += '<a class="LER-jyi" target="_blank" href="http://www.judicial.gov.tw/constitutionalcourt/p03_01.asp?expno=' + num + '">#' + num + '</a>';
             }
-            container.innerHTML = html;            
+            container.innerHTML = html;
             return container;
         };
         return {pattern: pattern, replace: replace, minLength: 5}; ///< 最短的是「釋字第一號」
+    }());
+
+    /** 法院名稱
+      * 之後應該還會大改，為了支援法院的暱稱（如「高本院」、「北高行」、「板院」）這些
+      */
+    rules.push(function() {
+        /*var pattern = [];
+        for(var c = 0; c < courts.length; ++c) pattern.push(courts[c].name);
+        pattern = new RegExp(pattern.join("|"), 'g');*/
+        //var pattern = /(最高(行政)?|智慧財產|(臺灣|福建)?(高等(行政)?|(臺北|士林|板橋|新北|宜蘭|基隆|桃園|新竹|苗栗|臺中|彰化|南投|雲林|嘉義|臺南|高雄|花蓮|臺東|屏東|澎湖|金門|連江)(地方|少年及家事)))法院(\s*(臺中|臺南|高雄|花蓮|金門)分院)?/g;
+        var pattern = "(最高(行政)?|智慧財產|(臺灣|福建)?(高等(行政)?|(臺[北中南東]|士林|板橋|新北|宜蘭|基隆|桃園|新竹|苗栗|彰化|南投|雲林|嘉義|高雄|花蓮|屏東|澎湖|金門|連江)(地方|少年及家事)))法院(\\s*(臺[中南]|高雄|花蓮|金門)分院)?";
+        pattern = new RegExp(pattern.replace(/臺/g, '[臺台]'), 'g');
+        var replace = function(match, inSpecial) {
+            var courtName = match[0].replace(/\s+/g, '').replace(/台/g, '臺');
+            var courtID;
+            for(var c = 0; c < courts.length; ++c) {
+                if(courts[c].name == courtName) {
+                    courtID = courts[c].ID;
+                    lastFoundCourt = courts[c];
+                    break;
+                }
+            }
+            var node;
+            if(inSpecial != 'A' && courtID) {
+                node = document.createElement("A");
+                node.setAttribute('target', '_blank');
+                node.setAttribute('href', "http://" + courtID.toLowerCase() + ".judicial.gov.tw");
+            }
+            else node = document.createElement("SPAN");
+            var title = courtName;
+            if(!courtID) title += "（沒有這個法院吧…）";
+            node.setAttribute("title", title);
+            node.className = "LER-court";
+            node.appendChild(document.createTextNode(match[0]));
+            return node;
+        }
+        return {pattern: pattern, replace: replace, minLength: 4}; ///< 最短的是「最高法院」
+    }());
+    
+    /** 裁判字號
+      * 還不支援行政法院的裁判
+      * 還沒加上連結
+      */
+    rules.push(function() {
+        var pattern = "(%number%)(年度?)?(\\W{1,10})字第?(%number%)號((刑事|民事|行政)(確定)?(終局)?(裁定|判決))";
+        pattern = pattern.replace(/%number%/g, '[\\d零０一二三四五六七八九十百千]+');
+        pattern = new RegExp(pattern, 'g');
+        var replace = function(match, inSpecial) {
+            console.log(match);
+            var year = parseInt(match[1]);
+            var num = parseInt(match[4]);
+            var text = year + match[3] + num + "號" + match[5];
+            var title = match[0];
+            if(lastFoundCourt) title = lastFoundCourt.name + title;
+            var node;
+            if(inSpecial != 'A' && lastFoundCourt) {
+                node = document.createElement("A");
+                node.setAttribute("target", "_blank");
+                var href = "http://jirs.judicial.gov.tw/FJUD/FJUDQRY01_1.aspx";
+                href += "?v_court=" + lastFoundCourt.ID;
+                href += "&v_sys=" + ({"刑事":"M", "民事":"V", "行政":"A", "公懲":"P"})[match[6]];
+                href += "&jud_year=" + year;
+                href += "&jud_case=" + match[3];
+                href += "&jud_no=" + num;                
+                node.setAttribute('href', href);
+                /*localStorage.setItem("LER_trial", JSON.stringify({
+                    v_court : lastFoundCourt.ID,
+                    v_sys   : match[6],
+                    jud_year: year,
+                    jud_case: match[3],
+                    jud_no  : num
+                }));*/
+            }
+            else node = document.createElement("SPAN");
+            node.className = "LER-trialNum";
+            node.setAttribute('title', title);
+            node.appendChild(document.createTextNode(text));
+            return node;
+        }
+        return {pattern: pattern, replace: replace, minLength: 8}; ///< 最短的是「99訴1刑事裁定」
     }());
 
     return {

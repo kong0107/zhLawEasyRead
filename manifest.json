@@ -1,62 +1,63 @@
 {
 "name": "zhLawEasyRead",
-"version": "0.3.9",
-"manifest_version": 2,
 "description": "Replace chinese words of sequence number of law articles into arabic or roman numerals.",
+"version": "0.3.9.7",
+"manifest_version": 2,
 "icons" : {"128": "icon.png"},
 "options_page": "options.html",
 "browser_action": {
-	"default_icon": "icon.png",
-	"default_title": "法令易讀器",
-	"default_popup": "popup.html"
+    "default_icon": "icon.png",
+    "default_title": "法令易讀器",
+    "default_popup": "popup.html"
 },
 "content_scripts": [
-	{
-		"matches": ["<all_urls>"],
-		"exclude_matches": [
-			"http://law.moj.gov.tw/Eng/*",
-			"*://drive.google.com/keep*",
-			"*://docs.google.com/*"
-		],
-		"css": ["main.css"],
-		"js": [
+    {
+        "matches": ["<all_urls>"],
+        "exclude_matches": [
+            "http://law.moj.gov.tw/Eng/*",
+            "*://drive.google.com/keep*",
+            "*://docs.google.com/*"
+        ],
+        "css": ["main.css"],
+        "js": [
             "parseInt.js",
-			"pcodes.js",
-			"aliases.js",
+            "pcodes.js",
+            "aliases.js",
             "lyIDs.js",
-			"LER.js"
-		],
+            "courts.js",
+            "LER.js"
+        ],
         "all_frames": true
-	},
-	{
-		"matches": ["http://www.judicial.gov.tw/constitutionalcourt/p03_01.asp*"],
-		"css": ["constitutionalcourt.css"],
-		"js": ["constitutionalcourt.js"]
-	},
-	{
-		"matches": ["http://jirs.judicial.gov.tw/*"],
-		"css": ["jirs.css"],
-		"js": ["jirs.js"]
-	},
-	{
-		"matches": ["http://lis.ly.gov.tw/*"],
-		"css": ["ly.css"],
-		"js": ["ly.js"]
-	},
-	{
-		"matches": ["http://lci.ly.gov.tw/*"],
-		"js": ["ly.lci.js"]
-	},
-	{
-		"matches": ["http://law.moj.gov.tw/*"],
-		"exclude_matches": ["http://law.moj.gov.tw/Eng/*"],
-		"js": ["moj.js"]
-	},
-	{
-		"matches": ["<all_urls>"],
-		"js": ["auto.js"],
+    },
+    {
+        "matches": ["http://www.judicial.gov.tw/constitutionalcourt/p03_01.asp*"],
+        "css": ["constitutionalcourt.css"],
+        "js": ["constitutionalcourt.js"]
+    },
+    {
+        "matches": ["http://jirs.judicial.gov.tw/*"],
+        "css": ["jirs.css"],
+        "js": ["jirs.js"]
+    },
+    {
+        "matches": ["http://lis.ly.gov.tw/*"],
+        "css": ["ly.css"],
+        "js": ["ly.js"]
+    },
+    {
+        "matches": ["http://lci.ly.gov.tw/*"],
+        "js": ["ly.lci.js"]
+    },
+    {
+        "matches": ["http://law.moj.gov.tw/*"],
+        "exclude_matches": ["http://law.moj.gov.tw/Eng/*"],
+        "js": ["moj.js"]
+    },
+    {
+        "matches": ["<all_urls>"],
+        "js": ["auto.js"],
         "run_at": "document_idle",
         "all_frames": true
-	}
+    }
 ]
 }

@@ -17,8 +17,11 @@ if(typeof LER == "object") (function(){
             target = fs.getElementsByTagName("FRAME")[(rows-1)*cols].contentWindow;
         }
     }
-    if((window == top && !document.getElementsByTagName("FRAMESET").length)
-        || window == target
+    if(document.location.protocol != "file:"
+        && (
+            (window == top && !document.getElementsByTagName("FRAMESET").length)
+            || window == target
+        )
     ) {
         console.log("fixed label");
         var fixed = document.createElement("DIV");
@@ -31,19 +34,4 @@ if(typeof LER == "object") (function(){
         fixed.className = "LER-fixed";        
         document.body.appendChild(fixed);
     }
-    
-    
-    
-    /*if(window == top || top.document.getElementsByTagName("FRAME")[1].contentWindow == window) {
-        var fixed = document.createElement("DIV");
-        var defaultText = "法令\n亦毒氣";
-        fixed.appendChild(document.createTextNode(defaultText));
-        fixed.setAttribute("title", "按下以再次偵測網頁內容\n（我目前只會用這個方法…）");
-        fixed.onclick = function(){LER.parse(document.body); LER.debugTime("parse again");};
-        fixed.onmouseover = function(){this.innerText = "按下\n以轉換";};
-        fixed.onmouseout = function(){this.innerText = defaultText;};
-        fixed.className = "LER-fixed";
-        
-        document.body.appendChild(fixed);
-    }*/
 })();

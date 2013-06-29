@@ -4,4 +4,33 @@
         if(images[i].src == 'http://210.69.124.103/ASTAR/100E3722A0C00000040.GIF')
             images[i].parentNode.replaceChild(document.createTextNode('參'), images[i]);
     }
+
+    /** 自動送出表單以看判決書
+      */
+    if(document.location.pathname == "/FJUD/FJUDQRY01_1.aspx" && document.location.search) {
+        var form = document.getElementsByTagName("FORM")[0];
+        var params = document.location.search.substr(1).split('&');
+        for(var i = 0; i < params.length; ++i) {
+            var pos = params[i].indexOf('=');
+            if(pos <= 0) continue;
+            var attr = params[i].substr(0, pos);
+            var value = params[i].substr(pos + 1);
+            if(!form[attr]) continue;
+            switch(attr) {
+            case "v_court":
+                var options = form.v_court.getElementsByTagName("OPTION");
+                for(var i = 0; i < options.length; ++i)
+                    if(options[i].value.substr(0, 3) == value)
+                        options[i].selected = true;
+                break;
+            case "v_sys":
+                for(var i = 0; i < form.v_sys.length; ++i)
+                    if(form.v_sys[i].value == value) form.v_sys[i].checked = true;
+                break;
+            default:
+                form[attr].value = value;
+            }
+        }
+        form.submit();
+    }
 })();
