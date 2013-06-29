@@ -330,15 +330,12 @@ LER = function(){
         return {pattern: pattern, replace: replace, minLength: 5}; ///< 最短的是「釋字第一號」
     }());
 
-    /** 法院名稱
-      * 之後應該還會大改，為了支援法院的暱稱（如「高本院」、「北高行」、「板院」）這些
+    /** 法院和檢察署
+      * 之後應該還會大改，以便支援法院的暱稱（如「高本院」、「北高行」、「板院」）這些
+      * 名稱不完全正確的還不會加上連結。
       */
     rules.push(function() {
-        /*var pattern = [];
-        for(var c = 0; c < courts.length; ++c) pattern.push(courts[c].name);
-        pattern = new RegExp(pattern.join("|"), 'g');*/
-        //var pattern = /(最高(行政)?|智慧財產|(臺灣|福建)?(高等(行政)?|(臺北|士林|板橋|新北|宜蘭|基隆|桃園|新竹|苗栗|臺中|彰化|南投|雲林|嘉義|臺南|高雄|花蓮|臺東|屏東|澎湖|金門|連江)(地方|少年及家事)))法院(\s*(臺中|臺南|高雄|花蓮|金門)分院)?/g;
-        var pattern = "(最高(行政)?|智慧財產|(臺灣|福建)?(高等(行政)?|(臺[北中南東]|士林|板橋|新北|宜蘭|基隆|桃園|新竹|苗栗|彰化|南投|雲林|嘉義|高雄|花蓮|屏東|澎湖|金門|連江)(地方|少年及家事)))法院(\\s*(臺[中南]|高雄|花蓮|金門)分院)?";
+        var pattern = "(最高(行政)?|智慧財產|(臺灣|福建)?(高等|(臺[北中南東]|士林|板橋|新北|宜蘭|基隆|桃園|新竹|苗栗|彰化|南投|雲林|嘉義|高雄|花蓮|屏東|澎湖|金門|連江)(高等行政|地方|少年及家事)))法院(\\s*(臺[中南]|高雄|花蓮|金門)分院)?(檢察署)?";
         pattern = new RegExp(pattern.replace(/臺/g, '[臺台]'), 'g');
         var replace = function(match, inSpecial) {
             var courtName = match[0].replace(/\s+/g, '').replace(/台/g, '臺');
@@ -346,7 +343,7 @@ LER = function(){
             for(var c = 0; c < courts.length; ++c) {
                 if(courts[c].name == courtName) {
                     courtID = courts[c].ID;
-                    lastFoundCourt = courts[c];
+                    if(!match[9]) lastFoundCourt = courts[c];
                     break;
                 }
             }
@@ -354,11 +351,13 @@ LER = function(){
             if(inSpecial != 'A' && courtID) {
                 node = document.createElement("A");
                 node.setAttribute('target', '_blank');
-                node.setAttribute('href', "http://" + courtID.toLowerCase() + ".judicial.gov.tw");
+                courtID = courtID.toLowerCase();
+                var subHref = match[9] ? ("www." + courtID + ".moj") : (courtID + ".judicial");
+                node.setAttribute('href', "http://" + subHref + ".gov.tw");
             }
             else node = document.createElement("SPAN");
             var title = courtName;
-            if(!courtID) title += "（沒有這個法院吧…）";
+            //if(!courtID) title += "（沒有這個法院吧…）";
             node.setAttribute("title", title);
             node.className = "LER-court";
             node.appendChild(document.createTextNode(match[0]));
@@ -372,46 +371,46 @@ LER = function(){
       * 還沒加上連結
       */
     rules.push(function() {
-        var pattern = "(%number%)(年度?)?(\\W{1,10})字第?(%number%)號((刑事|民事|行政)(確定)?(終局)?(裁定|判決))";
+        var pattern = "(%number%)(年度?)?(\\W{1,10})字\\s*第?(%number%)號((刑事|民事|行政)?(確定|終局|，?(中華民國)?\\d+年\\d+月\\d+日第.審)*(裁定|判決))";
         pattern = pattern.replace(/%number%/g, '[\\d零０一二三四五六七八九十百千]+');
         pattern = new RegExp(pattern, 'g');
         var replace = function(match, inSpecial) {
             console.log(match);
             var year = parseInt(match[1]);
             var num = parseInt(match[4]);
-            var text = year + match[3] + num + "號" + match[5];
+            
+            var text = year + "年" + match[3] + "字" + num + "號" + match[5];
             var title = match[0];
-            if(lastFoundCourt) title = lastFoundCourt.name + title;
+            
             var node;
-            if(inSpecial != 'A' && lastFoundCourt) {
-                node = document.createElement("A");
-                node.setAttribute("target", "_blank");
-                var href = "http://jirs.judicial.gov.tw/FJUD/FJUDQRY01_1.aspx";
-                href += "?v_court=" + lastFoundCourt.ID;
-                href += "&v_sys=" + ({"刑事":"M", "民事":"V", "行政":"A", "公懲":"P"})[match[6]];
-                href += "&jud_year=" + year;
-                href += "&jud_case=" + match[3];
-                href += "&jud_no=" + num;                
-                node.setAttribute('href', href);
-                /*localStorage.setItem("LER_trial", JSON.stringify({
-                    v_court : lastFoundCourt.ID,
-                    v_sys   : match[6],
-                    jud_year: year,
-                    jud_case: match[3],
-                    jud_no  : num
-                }));*/
+            if(lastFoundCourt) {
+                title = lastFoundCourt.name + title;
+                if(inSpecial != 'A') {
+                    node = document.createElement("A");
+                    node.setAttribute("target", "_blank");
+                    var sys = match[6] 
+                        ? ({"刑事":"M", "民事":"V", "行政":"A", "公懲":"P"})[match[6]]
+                        : (/行政/.test(lastFoundCourt.name) ? "A" : "M")
+                    ;
+                    var href = "http://jirs.judicial.gov.tw/FJUD/FJUDQRY01_1.aspx";
+                    href += "?v_court=" + lastFoundCourt.ID;
+                    href += "&v_sys=" + sys;
+                    href += "&jud_year=" + year;
+                    href += "&jud_case=" + encodeURI(match[3]);
+                    href += "&jud_no=" + num;                
+                    node.setAttribute('href', href);
+                }
             }
-            else node = document.createElement("SPAN");
+            if(!node) node = document.createElement("SPAN");    
             node.className = "LER-trialNum";
             node.setAttribute('title', title);
             node.appendChild(document.createTextNode(text));
             return node;
         }
-        return {pattern: pattern, replace: replace, minLength: 8}; ///< 最短的是「99訴1刑事裁定」
+        return {pattern: pattern, replace: replace, minLength: 8}; ///< 最短的是「99訴字1號裁定」
     }());
 
     return {
-        //parse: parseElement,
         parse: function() {
             this.counter = 0;
             parseElement.apply(this, arguments);
@@ -420,8 +419,6 @@ LER = function(){
         setDefaultLaw: setDefaultLaw,
         autoParse: document.body,
         setAutoParse: function(node) {this.autoParse = node;},
-        //skippingTags: skippingTags,
-        //lawInfos: lawInfos,
         debug: function(varName) {return eval(varName);},
         debugTime: function(str) {debug(str);}
     };

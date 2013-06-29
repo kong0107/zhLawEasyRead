@@ -14,14 +14,16 @@
             var pos = params[i].indexOf('=');
             if(pos <= 0) continue;
             var attr = params[i].substr(0, pos);
-            var value = params[i].substr(pos + 1);
+            var value = decodeURI(params[i].substr(pos + 1));
             if(!form[attr]) continue;
             switch(attr) {
             case "v_court":
                 var options = form.v_court.getElementsByTagName("OPTION");
                 for(var i = 0; i < options.length; ++i)
-                    if(options[i].value.substr(0, 3) == value)
+                    if(options[i].value.substr(0, 3) == value) {
                         options[i].selected = true;
+                        break;  ///< 高等法院有兩個，第一個才對
+                    }
                 break;
             case "v_sys":
                 for(var i = 0; i < form.v_sys.length; ++i)
@@ -32,5 +34,6 @@
             }
         }
         form.submit();
+        if(typeof LER == "object" && LER.setAutoParse) LER.setAutoParse(null);
     }
 })();
