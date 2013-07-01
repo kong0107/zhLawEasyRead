@@ -250,9 +250,9 @@ LER = function(){
                 node.setAttribute('target', '_blank');
                 var href = "http://law.moj.gov.tw/LawClass/Law";
                 if(/[,-]/.test(SNo)) href += "SearchNo.aspx?PC=" + law.PCode + "&SNo=" + SNo;   ///< 多條
-                else if(!law.lyID) href += "Single.aspx?Pcode=" + law.PCode + "&FLNO=" + SNo;     ///< 單條
+                else if(!law.lyID || law.name == '民法') href += "Single.aspx?Pcode=" + law.PCode + "&FLNO=" + SNo;     ///< 單條
                 else {
-                    //http://lis.ly.gov.tw/lghtml/lawstat/relarti/01183/01183009101.htm
+                    ///  連向立法院法律系統的「相關條文」
                     href = "http://lis.ly.gov.tw/lghtml/lawstat/relarti/" + law.lyID + "/" + law.lyID;
                     href += zeroFill(num1, 4) + zeroFill(num2 ? num2 : 0, 2) + ".htm";
                 }
@@ -375,7 +375,6 @@ LER = function(){
         pattern = pattern.replace(/%number%/g, '[\\d零０一二三四五六七八九十百千]+');
         pattern = new RegExp(pattern, 'g');
         var replace = function(match, inSpecial) {
-            console.log(match);
             var year = parseInt(match[1]);
             var num = parseInt(match[4]);
             

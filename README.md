@@ -7,7 +7,7 @@ Google瀏覽器外掛，可於瀏覽網站時：
     * 將法規名稱加上連往[全國法規資料庫](http://law.moj.gov.tw/)看該法規全文的網頁連結
     * 將單一法條連向[立法院法律系統](http://lis.ly.gov.tw/lgcgi/lglaw)該條文與相關條文
     * 將多個法條連向[全國法規資料庫](http://law.moj.gov.tw/)看該些條文
-* 亦能運作於[零時政府立法院](http://ly.g0v.tw.jit.su/)、[評律網](http://www.pingluweb.com/)等以AJAX機制更新的內容（但需手動觸發）。
+* 亦能運作於[零時政府立法院](http://ly.g0v.tw.jit.su/)、[評律網](http://www.pingluweb.com/)等以AJAX機制更新的內容（需點選網址列的按鈕）。
 * 提到大法官解釋時，即連向該號解釋的官方網頁。
 * 將下列網站稍做排版，使易於閱讀：
     * [大法官解釋](http://www.judicial.gov.tw/constitutionalcourt/p03.asp)
@@ -17,8 +17,11 @@ Google瀏覽器外掛，可於瀏覽網站時：
 警告：部落客於編輯網誌時，請暫時關閉本外掛。
 
 ## Examples
+* 大法官解釋（[範例網頁連結](http://www.judicial.gov.tw/constitutionalcourt/p03_01.asp?expno=617)）
+![Judicial Interpretation](http://images.plurk.com/kAGZ-22KieXBnFHCtsKe8DBiD8u.jpg)
+* 立法院法律系統（[範例網頁連結](http://lis.ly.gov.tw/lghtml/lawstat/reason2/01183100110400.htm)）
 ![Legislative Yuan](http://images.plurk.com/kAGZ-5bvO4HGPifAXwkDU9CAs3y.jpg)
-![Judicial Interpretation](http://images.plurk.com/kAGZ-5vXMDaSEAUQCW51VJ06k3Z.jpg)
+* 全國法規資料庫（[範例網頁連結](http://law.moj.gov.tw/LawClass/LawSearchNo.aspx?PC=B0000001&SNo=1079.4,1079.5)）
 ![Laws & Regulations Database](http://images.plurk.com/kAGZ-1V1k4UwBowvUXGaOQ0DF6R.jpg)
 
 # Installation
@@ -31,6 +34,7 @@ Google瀏覽器外掛，可於瀏覽網站時：
 * 網址列右邊出現「§#」圖示的話就是成功了，按該圖示會有一些連結。
 * 解壓縮出來的資料夾與檔案不要刪掉。
 * 試試在[全國法規資料庫](http://law.moj.gov.tw/)中搜尋一些法規，例如[個人資料保護法](http://law.moj.gov.tw/LawClass/LawAll.aspx?PCode=I0050021)
+* 瀏覽動態讀取的網頁（如Facebook、噗浪）時，可能須手動按右上角的「§#」圖示再按「轉換這個網頁」才會作用。
 
 警告：部落客於編輯網誌時，請暫時關閉本外掛。
 

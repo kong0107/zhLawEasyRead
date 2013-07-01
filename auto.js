@@ -4,11 +4,19 @@ if(typeof LER == "object") (function(){
         LER.debugTime("parsed all");
     }
     
-    /** 加上懸浮按鈕
+    chrome.runtime.onMessage.addListener(
+        function(request, sender, sendResponse) {
+            if (request.greeting == "hello") {
+                LER.parse(document.body);
+            }
+        }
+    );
+    
+    /** 加上懸浮按鈕－－之前觸發不成功時用的
       * 加在沒有frame，或是最左下角的frame裡頭（不理iFrame）
       * 以下程式碼先判斷「『這個』是不是top左下角的那個frame」
       */    
-    var target;
+    /*var target;
     if(top.document && top.document.domain == document.domain) {
         var fs;
         if(fs = top.document.getElementsByTagName("FRAMESET")[0]) {
@@ -23,7 +31,7 @@ if(typeof LER == "object") (function(){
             || window == target
         )
     ) {
-        console.log("fixed label");
+        //console.log("fixed label");
         var fixed = document.createElement("DIV");
         var defaultText = "法令\n亦毒氣";
         fixed.appendChild(document.createTextNode(defaultText));
@@ -33,5 +41,5 @@ if(typeof LER == "object") (function(){
         fixed.onmouseout = function(){this.innerText = defaultText;};
         fixed.className = "LER-fixed";        
         document.body.appendChild(fixed);
-    }
+    }*/
 })();
