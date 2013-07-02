@@ -36,4 +36,14 @@
         form.submit();
         if(typeof LER == "object" && LER.setAutoParse) LER.setAutoParse(null);
     }
+    
+    /** 如果只有一個搜尋結果，那就直接看裁判書
+      */
+    if(document.location.pathname == "/FJUD/FJUDQRY02_1.aspx") {
+        var as = document.getElementsByTagName("A");
+        if(as.length == 3) { ///< 該頁有兩個其他連結
+            document.location = as[0].href;
+            if(typeof LER == "object" && LER.setAutoParse) LER.setAutoParse(null);
+        }
+    }
 })();

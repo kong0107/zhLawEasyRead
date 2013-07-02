@@ -98,12 +98,12 @@ LER = function(){
         debug("setDefaultLaw " + arg);
         return defaultLaw = (typeof arg == "string") ? lawInfos[arg] : arg;
     };
-    
+
     /** 處理法院與裁判的對應
       * 原理同上，只是暫不處理「預設法院」這部分
       * （之後要處理裁判書中的「本院」其他裁判時應該還是會需要處理）
       */
-    var lastFoundCourt;    
+    var lastFoundCourt;
 
     /** 比對的規則
       * 使用匿名函數設定初始值並回傳物件給rules.push
@@ -270,7 +270,7 @@ LER = function(){
         return {pattern: pattern, replace: replace, minLength: 3}; ///< 最短的是「第一條」
     }());
 
-    /** 處理到全國法規資料庫的 "第 15-1 條"
+    /** 處理全國法規資料庫的 "第 15-1 條"
       */
     rules.push(function() {
         var pattern = /第\s*(\d+)(-(\d+))?\s*條/g;
@@ -327,48 +327,102 @@ LER = function(){
             container.innerHTML = html;
             return container;
         };
-        return {pattern: pattern, replace: replace, minLength: 5}; ///< 最短的是「釋字第一號」
+        return {pattern: pattern, replace: replace, minLength: 4}; ///< 最短的是「釋字一號」
     }());
 
     /** 法院和檢察署
-      * 之後應該還會大改，以便支援法院的暱稱（如「高本院」、「北高行」、「板院」）這些
-      * 名稱不完全正確的還不會加上連結。
+      * 公懲會還沒有加進來
+      * 
+      * Notes:
+      * * 現實中沒有「福建高等法院」和其檢察署，雖然有「福建高院金門分院」和其檢署
+      * * 智財法院對應的檢察署是「高檢署智財分署」，而不是「智財高分檢」或「智財法院檢察署」
+      *
+      * Bugs:
+      * * 「大『雄檢』查了抽屜」會被比對到
+      * * 福建高院會對應到台灣高院
+      * * 智財分檢署不會比對到，不過倒是比對到了「智財法院檢察署」
+      * * 直接拿法院的代稱來對應檢察署，智財分檢署和板院會是錯誤的（分別應是thip和pcc）
       */
     rules.push(function() {
-        var pattern = "(最高(行政)?|智慧財產|(臺灣|福建)?(高等|(臺[北中南東]|士林|板橋|新北|宜蘭|基隆|桃園|新竹|苗栗|彰化|南投|雲林|嘉義|高雄|花蓮|屏東|澎湖|金門|連江)(高等行政|地方|少年及家事)))法院(\\s*(臺[中南]|高雄|花蓮|金門)分院)?(檢察署)?";
-        pattern = new RegExp(pattern.replace(/臺/g, '[臺台]'), 'g');
+        var provinces = "([臺台]灣|福建)?";
+        var counties = "([臺台][北中南東]|士林|板橋|新北|宜蘭|基隆|桃園|新竹|苗栗|彰化|南投|雲林|嘉義|高雄|花蓮|屏東|澎湖|金門|連江)";
+        var branches = "([臺台][中南]|高雄|花蓮|金門)";
+        var patterns = [
+            "(最高(行政)?|智慧?財產?)法院(檢察署)?",
+            provinces + "高(等法|本)?(院(" + branches + "分院)?(檢察署)?|檢署)",
+            provinces + counties + "地((方法)?院|檢察?署)",
+            "([臺台]?[北中]|高雄?)高等?行(政法院)?",
+            "(([臺台]灣)?高雄)?少年?及?家事?法院",
+            "[北板士雄宜高][院檢]",
+            branches + "高分檢"
+        ];
+        var pattern = new RegExp("(" + patterns.join(")|(") + ")", 'g');
+        
+        /// 找關鍵字，如果有keyword，那麼其mapping中有該字的即為該法院
+        var mappings = [ 
+            { keyword: "", mapping: { ///< 單憑一字即可辨認是何法院的
+                TPP:"懲", IPC:"智", KSY:"少",
+                SLD:"士", PCD:"板", ILD:"宜", KLD:"基",
+                TYD:"桃", SCD:"竹", MLD:"苗", 
+                CHD:"彰", NTD:"投",
+                ULD:"雲", CYD:"嘉",
+                PTD:"屏", PHD:"澎", LCD:"連"
+            }},
+            { keyword: "地", mapping: { ///< 該地區有其他類法院的
+                PCD:"新", ///< 是新北，因為「新竹」比對過了
+                TPD:"北", ///< 是臺北，因為「新北」比對過了
+                TCD:"中", 
+                TND:"南", ///< 是臺南，因為「南投」比對過了
+                KSD:"雄", HLD:"花", TTD:"東", KMD:"金"
+            }},
+            { keyword: "行", mapping: { ///< 行政法院只有四間
+                TPA:"最", TPB:"北", TCB:"中", KSB:"雄"
+            }},
+            { keyword: "分", mapping: { ///< 高等法院分院有五間
+                TCH:"中", TNH:"南", KSH:"雄", HLH:"花", KMH:"金"
+            }},
+            { keyword: "", mapping: { ///< 最後剩下的
+                TPD:"北", KSD:"雄", ///< 「北院」、「雄檢」這些兩個字的
+                TPS:"最", TPH:"高"  ///< 普通法院體系，因為行政法院都比對過了
+            }}
+        ];
         var replace = function(match, inSpecial) {
             var courtName = match[0].replace(/\s+/g, '').replace(/台/g, '臺');
+            var isProsecution = courtName.indexOf("檢") > 0;
             var courtID;
-            for(var c = 0; c < courts.length; ++c) {
-                if(courts[c].name == courtName) {
-                    courtID = courts[c].ID;
-                    if(!match[9]) lastFoundCourt = courts[c];
-                    break;
-                }
+            for(var i = 0; i < mappings.length; ++i) {
+                var m = mappings[i];
+                if(courtName.indexOf(m.keyword) == -1) continue;
+                for(var c in m.mapping) 
+                    if(courtName.indexOf(m.mapping[c]) != -1) {
+                        courtID = c;
+                        break;
+                    }
+                if(courtID) break;
             }
+            if(courtID) lastFoundCourt = courtID;
             var node;
             if(inSpecial != 'A' && courtID) {
                 node = document.createElement("A");
                 node.setAttribute('target', '_blank');
-                courtID = courtID.toLowerCase();
-                var subHref = match[9] ? ("www." + courtID + ".moj") : (courtID + ".judicial");
+                var subHref = isProsecution ? ("www." + courtID + ".moj") : (courtID + ".judicial");
                 node.setAttribute('href', "http://" + subHref + ".gov.tw");
             }
             else node = document.createElement("SPAN");
-            var title = courtName;
-            //if(!courtID) title += "（沒有這個法院吧…）";
-            node.setAttribute("title", title);
+            node.setAttribute("title", courtID
+                ? courts[courtID] + (isProsecution ? "檢察署" : "")
+                : courtName + "\n（沒有這個法院吧？）"
+            );
             node.className = "LER-court";
             node.appendChild(document.createTextNode(match[0]));
             return node;
         }
         return {pattern: pattern, replace: replace, minLength: 4}; ///< 最短的是「最高法院」
     }());
-    
+
     /** 裁判字號
-      * 還不支援行政法院的裁判
-      * 還沒加上連結
+      * 搭配`jirs.js`，可連向裁判書系統並送出表單，
+      * 不過如果連結有兩個以上，還是得自己點
       */
     rules.push(function() {
         var pattern = "(%number%)(年度?)?(\\W{1,10})字\\s*第?(%number%)號((刑事|民事|行政)?(確定|終局|，?(中華民國)?\\d+年\\d+月\\d+日第.審)*(裁定|判決))";
@@ -377,30 +431,30 @@ LER = function(){
         var replace = function(match, inSpecial) {
             var year = parseInt(match[1]);
             var num = parseInt(match[4]);
-            
+
             var text = year + "年" + match[3] + "字" + num + "號" + match[5];
             var title = match[0];
-            
+
             var node;
             if(lastFoundCourt) {
-                title = lastFoundCourt.name + title;
+                title = courts[lastFoundCourt] + "\n" + title;
                 if(inSpecial != 'A') {
                     node = document.createElement("A");
                     node.setAttribute("target", "_blank");
-                    var sys = match[6] 
+                    var sys = match[6]
                         ? ({"刑事":"M", "民事":"V", "行政":"A", "公懲":"P"})[match[6]]
-                        : (/行政/.test(lastFoundCourt.name) ? "A" : "M")
+                        : (/行政/.test(courts[lastFoundCourt]) ? "A" : "M")
                     ;
                     var href = "http://jirs.judicial.gov.tw/FJUD/FJUDQRY01_1.aspx";
-                    href += "?v_court=" + lastFoundCourt.ID;
+                    href += "?v_court=" + lastFoundCourt;
                     href += "&v_sys=" + sys;
                     href += "&jud_year=" + year;
                     href += "&jud_case=" + encodeURI(match[3]);
-                    href += "&jud_no=" + num;                
+                    href += "&jud_no=" + num;
                     node.setAttribute('href', href);
                 }
             }
-            if(!node) node = document.createElement("SPAN");    
+            if(!node) node = document.createElement("SPAN");
             node.className = "LER-trialNum";
             node.setAttribute('title', title);
             node.appendChild(document.createTextNode(text));
