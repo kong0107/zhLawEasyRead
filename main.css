@@ -2,9 +2,9 @@
     padding: 0 0.15em;
 }
 
-.LER-lawName, 
-.LER-artNum, 
-.LER-jyi-container, 
+.LER-lawName,
+.LER-artNum-container,
+.LER-jyi-container,
 .LER-court ,
 .LER-trialNum {
     padding: 0 0.15em;
@@ -13,26 +13,13 @@
     font-weight: bold;
 }
 
-
-.LER-fixed {
-    position: fixed;
-    bottom: 0;
+.LER-iframe {
+    position: absolute;
+    width: 400px;
+    height: 250px;
+    top: 1em;
     left: 0;
-    margin: 0;
-    border: 0;
-    padding: 0.25em;
-    width: 3em;
-    height: 2.5em;
-    background-color: #000;
-    background-image: none;
-    color: #fff;
-    cursor: pointer;
-    white-space: pre;
-    text-align: center;
-    opacity: 0.5;
+    border: 1px solid #ccc;
+    background-color: #fff;
     z-index: 1;
-}
-
-.LER-fixed:hover {
-    opacity: 1;
 }

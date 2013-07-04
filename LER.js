@@ -22,6 +22,50 @@ LER = function(){
         return num;
     }
 
+    /** 加上彈出式內嵌視窗
+      * 只在要顯現時才去讀取該網頁，以避免無窮iframe的問題，也可節省流量考量
+      * 目前只能幫已經有連結的對象加上
+      * \param linkReplacer 把連結的網址轉換成要iframe的網址，不指定即不轉換
+      */
+    var addIFrame = function (selector, linkReplacer) {
+        var eles = document.querySelectorAll(selector);
+        for(var i = 0; i < eles.length; ++i) {
+            var href = eles[i].getAttribute("href");
+            if(!href) continue;
+            if(typeof linkReplacer == "function")
+                href = linkReplacer(href);
+            if(typeof href != "string")
+                throw new TypeError("function `linkReplacer` must return a string.");
+
+            var iframe = document.createElement("IFRAME");
+            iframe.style.display = "none";
+            iframe.className = "LER-iframe";
+            eles[i].style.position = "relative";
+            eles[i].appendChild(iframe);
+            (function() {
+                //var timerID;                
+                eles[i].onmouseover = function() {
+                    var isFirst = true;
+                    var src = href;
+                    return function() {
+                        if(isFirst) {
+                            this.lastChild.src = src;
+                            isFirst = false;
+                        }
+                        //if(timerID) clearTimeout(timerID);
+                        //timerID = setTimeout(function() {
+                            this.lastChild.style.display = "";
+                        //}, 500);
+                    }
+                }();
+                eles[i].onmouseout = function(){
+                    //clearTimeout(timerID);
+                    this.lastChild.style.display = "none";
+                };
+            })();
+        }
+    };
+
     /** 2013-06-22開始實作的又一種作法
       * （好啦我知道一直改核心演算法很不好）
       * 無論幾種要轉換的東西，一個 Text 節點即只處理一次
@@ -170,7 +214,7 @@ LER = function(){
             if(inSpecial != 'A' && lastFoundLaw.PCode) {
                 node = document.createElement('A');
                 node.setAttribute('target', '_blank');
-                node.setAttribute('href', "http://law.moj.gov.tw/LawClass/LawAll.aspx?PCode=" + lastFoundLaw.PCode);
+                node.setAttribute('href', "http://law.moj.gov.tw/LawClass/LawAll.aspx?PCode=" + lastFoundLaw.PCode + "#firstTH");
             }
             else node = document.createElement("SPAN");
             node.setAttribute('title', lastFoundLaw.name);
@@ -206,7 +250,7 @@ LER = function(){
 
         var replace = function(match, inSpecial) {
             ++counter;
-            var text = "";  ///< 簡化後的文字
+            var html = "";  ///< 待會直接用innerHTML
             var SNo = "";   ///< 連結
             reSplitter.lastIndex = 0;
             var num1, num2;
@@ -216,28 +260,30 @@ LER = function(){
             var glues = match[0].match(reSplitter);        //#=> [                         "、",               "至"       ]
             for(var i = 0; i < parts.length; ++i) {
                 var scraps = parts[i].split(/第/g);        //#=> ["", "十八條之一", "一項", "九類"], ["", "二十六條", "二款"], ["", "四款"]
+                var single = "";
                 for(var j = 1; j < scraps.length; ++j) {
                     rePart.lastIndex = 0;
                     var m = rePart.exec(scraps[j]);
                     num1 = parseInt(m[1]);
                     switch(m[2]) {
                     case "條":
-                        text += "§" + num1;
+                        single = "§" + num1;
                         if(i) SNo += (glues[i-1] == "至") ? "-" : ",";   ///< 處理連接詞
                         SNo += num1;
                         break;
                     default:    ///< 之後要處理簡稱，例如「項」是簡記為羅馬數字，但也要允許使用者選擇喜歡的簡記方式
-                        text += "第" + num1 + m[2];
+                        single += "第" + num1 + m[2];
                     }
                     if(m[3]) {  ///< 理論上只在「條」的情況出現
                         num2 = parseInt(m[4]);
-                        text += "-" + num2;
+                        single += "-" + num2;
                         SNo += "." + num2;
                     }
                 }
+                html += '<span class="LER-artNum">' + single + '</span>';
 
                 if(i == parts.length - 1) break;    ///< 處理連接詞
-                text += ((glues[i] == ",") ? "" : " ") + glues[i] + " ";
+                html += ((glues[i] == ",") ? "" : " ") + glues[i] + " ";
             }
 
             /// 處理預設法規。機制參閱此處變數宣告之處
@@ -245,26 +291,23 @@ LER = function(){
             isImmediateAfterLaw = false;
 
             var node;
-            if(inSpecial != 'A' && !!law && SNo) {  ///< 如果是「前條第一款」，那就還不會加上連結
+            if(inSpecial != 'A' && !!law && SNo && law.PCode) {  ///< 如果是「前條第一款」，那就還不會加上連結
                 node = document.createElement('A');
                 node.setAttribute('target', '_blank');
                 var href = "http://law.moj.gov.tw/LawClass/Law";
-                if(/[,-]/.test(SNo)) href += "SearchNo.aspx?PC=" + law.PCode + "&SNo=" + SNo;   ///< 多條
-                else if(!law.lyID || law.name == '民法') href += "Single.aspx?Pcode=" + law.PCode + "&FLNO=" + SNo;     ///< 單條
-                else {
-                    ///  連向立法院法律系統的「相關條文」
-                    href = "http://lis.ly.gov.tw/lghtml/lawstat/relarti/" + law.lyID + "/" + law.lyID;
-                    href += zeroFill(num1, 4) + zeroFill(num2 ? num2 : 0, 2) + ".htm";
-                }
-                node.setAttribute('href', href);
+                href += /[,-]/.test(SNo)
+                    ? "SearchNo.aspx?PC=" + law.PCode + "&SNo=" + SNo   ///< 多條
+                    : "Single.aspx?Pcode=" + law.PCode + "&FLNO=" + SNo ///< 單條
+                ;
+                node.setAttribute('href', href + "#firstTH");
                 node.setAttribute('title', law.name + "\n" + match[0]);
             }
             else {
                 node = document.createElement("SPAN");
                 node.setAttribute('title', match[0]);
             }
-            node.className = "LER-artNum";
-            node.appendChild(document.createTextNode(text));
+            node.className = "LER-artNum-container";
+            node.innerHTML = html;
             return node;
         };
         return {pattern: pattern, replace: replace, minLength: 3}; ///< 最短的是「第一條」
@@ -321,8 +364,8 @@ LER = function(){
             for(var i = 0; i < matches.length; ++i) {
                 var num = parseInt(matches[i]);
                 if(i) html += ", ";
-                if(inSpecial == "A") html += num;
-                else html += '<a class="LER-jyi" target="_blank" href="http://www.judicial.gov.tw/constitutionalcourt/p03_01.asp?expno=' + num + '">#' + num + '</a>';
+                if(inSpecial == "A") html += '<span class="LER-jyi">#' + num + '</span>';
+                else html += '<a class="LER-jyi" target="_blank" href="http://www.judicial.gov.tw/constitutionalcourt/p03_01.asp?expno=' + num + '#number">#' + num + '</a>';
             }
             container.innerHTML = html;
             return container;
@@ -332,7 +375,7 @@ LER = function(){
 
     /** 法院和檢察署
       * 公懲會還沒有加進來
-      * 
+      *
       * Notes:
       * * 現實中沒有「福建高等法院」和其檢察署，雖然有「福建高院金門分院」和其檢署
       * * 智財法院對應的檢察署是「高檢署智財分署」，而不是「智財高分檢」或「智財法院檢察署」
@@ -351,19 +394,19 @@ LER = function(){
             "(最高(行政)?|智慧?財產?)法院(檢察署)?",
             provinces + "高(等法|本)?(院(" + branches + "分院)?(檢察署)?|檢署)",
             provinces + counties + "地((方法)?院|檢察?署)",
-            "([臺台]?[北中]|高雄?)高等?行(政法院)?",
+            "([臺台]?[北中]|高雄?|最)高等?行(政法院)?",
             "(([臺台]灣)?高雄)?少年?及?家事?法院",
-            "[北板士雄宜高][院檢]",
+            "([北板士雄宜]|最?高)[院檢]",
             branches + "高分檢"
         ];
         var pattern = new RegExp("(" + patterns.join(")|(") + ")", 'g');
-        
+
         /// 找關鍵字，如果有keyword，那麼其mapping中有該字的即為該法院
-        var mappings = [ 
+        var mappings = [
             { keyword: "", mapping: { ///< 單憑一字即可辨認是何法院的
                 TPP:"懲", IPC:"智", KSY:"少",
                 SLD:"士", PCD:"板", ILD:"宜", KLD:"基",
-                TYD:"桃", SCD:"竹", MLD:"苗", 
+                TYD:"桃", SCD:"竹", MLD:"苗",
                 CHD:"彰", NTD:"投",
                 ULD:"雲", CYD:"嘉",
                 PTD:"屏", PHD:"澎", LCD:"連"
@@ -371,7 +414,7 @@ LER = function(){
             { keyword: "地", mapping: { ///< 該地區有其他類法院的
                 PCD:"新", ///< 是新北，因為「新竹」比對過了
                 TPD:"北", ///< 是臺北，因為「新北」比對過了
-                TCD:"中", 
+                TCD:"中",
                 TND:"南", ///< 是臺南，因為「南投」比對過了
                 KSD:"雄", HLD:"花", TTD:"東", KMD:"金"
             }},
@@ -393,7 +436,7 @@ LER = function(){
             for(var i = 0; i < mappings.length; ++i) {
                 var m = mappings[i];
                 if(courtName.indexOf(m.keyword) == -1) continue;
-                for(var c in m.mapping) 
+                for(var c in m.mapping)
                     if(courtName.indexOf(m.mapping[c]) != -1) {
                         courtID = c;
                         break;
@@ -469,8 +512,12 @@ LER = function(){
             parseElement.apply(this, arguments);
             debug(counter + " has been rendered");
         },
+        addIFrame: addIFrame,
         setDefaultLaw: setDefaultLaw,
         autoParse: document.body,
+        showJYI: function(num) {
+            debug(num);
+        },
         setAutoParse: function(node) {this.autoParse = node;},
         debug: function(varName) {return eval(varName);},
         debugTime: function(str) {debug(str);}
