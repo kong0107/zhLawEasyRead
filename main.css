@@ -1,7 +1,3 @@
-.lawArticle {
-    padding: 0 0.15em;
-}
-
 .LER-lawName,
 .LER-artNum-container,
 .LER-jyi-container,
@@ -22,4 +18,29 @@
     border: 1px solid #ccc;
     background-color: #fff;
     z-index: 1;
+}
+
+/** 項類款目的格式
+  * 英文參照http://law.moj.gov.tw/Service/standard_en.aspx
+  */
+.LER-art-paragraphs {
+    list-style-type: upper-roman;
+    padding-left: 1.5em;
+}
+
+.LER-art-cateogries {
+    padding-left: 4em;
+    text-indent: -4em;
+}
+
+.LER-art-subparagraphs {
+    list-style-type: none;
+    padding-left: 2em;
+    text-indent: -2em;
+}
+
+.LER-art-items {
+    list-style-type: none;
+    padding-left: 3em;
+    text-indent: -3em;
 }

@@ -2,7 +2,7 @@
 "manifest_version": 2,
 "name": "法規亦毒氣",
 "description": "將網頁中的法規與條號都轉變成連結，讓您快速查閱指定條文。",
-"version": "0.3.12",
+"version": "0.3.12.3",
 "icons" : {"128": "icon.png"},
 "options_page": "options.html",
 "browser_action": {
@@ -27,6 +27,7 @@
             "courts.js",
             "LER.js"
         ],
+        "run_at": "document_end",
         "all_frames": true
     },
     {
