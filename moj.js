@@ -1,6 +1,5 @@
 ﻿(function(){
     if(typeof LER != "object" || !LER.setDefaultLaw) return;
-    LER.setAutoParse(null);
 
     /// 判斷「預設法規」
     var pages = ["All", "Single", "AllPara", "SearchNo", "SearchContent", "History"];
