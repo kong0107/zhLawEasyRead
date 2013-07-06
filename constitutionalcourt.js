@@ -23,5 +23,5 @@ for(var i = 0; i < fonts.length; ++i) {
 }
 
 /// 內嵌的話，拿掉其他東西
-if(window != top)
-    document.body.replaceChild(document.getElementById("AutoNumber1"), document.body.firstElementChild);
+if(window != top)   ///< 該頁居然有兩個 table#AutoNumber1
+    document.body.replaceChild(document.getElementsByTagName("TABLE")[4], document.body.firstElementChild);
