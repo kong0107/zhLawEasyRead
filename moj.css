@@ -2,6 +2,13 @@
     width: auto !important;
 }
 
+#Forword, /* 憲法和增修條文的「前言」 */
+#ctl00_cphContent_Forword, /* 列印頁面的前言 */
+#aspnetForm table, /* 列印頁面中的表格 */
 .TableLawAll {
     width: 100%;
+}
+
+#Header {   /* 列印 */
+    display: none;
 }

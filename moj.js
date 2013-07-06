@@ -3,9 +3,13 @@
 
     /// 判斷「預設法規」
     var pages = ["All", "Single", "AllPara", "SearchNo", "SearchContent", "History"];
-    var match = document.location.pathname.match(/^\/LawClass\/Law(\w+).aspx/);
-    if(!match || pages.indexOf(match[1]) < 0) return;
-    LER.setDefaultLaw(document.getElementById("Content").getElementsByTagName('A')[1].lastChild.data.replace(/\s/g, ''));
+    var match = document.location.pathname.match(/^\/LawClass\/Law(\w+)(_print)?.aspx/);
+    if(match && pages.indexOf(match[1]) >= 0) 
+        try {
+            LER.setDefaultLaw(document.getElementById("Content").getElementsByTagName('A')[1].lastChild.data.replace(/\s/g, ''));    
+        } catch(e) {
+            console.log("`#Content a` doesn't seem to exist.");
+        }
     
     /** 在法規名稱處加上一個anchor
       * 以找「第一個TH標籤」實作，後續或許可以有其他應用。
@@ -13,12 +17,22 @@
     var firstTH = document.getElementsByTagName("TH")[0];
     if(firstTH) 
         firstTH.innerHTML = '<a name="firstTH">' + firstTH.innerText + '</a>';
-        
+    
     /** 內嵌時，把header/footer拿掉
       * 但應該要留下<form />
       */
     if(window != top) {
-        document.body.replaceChild(document.getElementById("mainFrame_body"), document.body.lastElementChild);
+        var main = document.getElementById("main");
+        if(main) {
+            main.parentNode.replaceChild(document.getElementById("mainFrame_body"), main);
+            //document.getElementsByTagName("FORM")[0].target = "_blank";
+        }
+        var base = document.getElementsByTagName("BASE")[0];
+        if(!base) {
+            base = document.createElement("BASE");
+            document.head.appendChild(base);
+        }
+        base.target = "_blank";
     }
         
     /** 利用條文表格左方的空間
@@ -34,9 +48,7 @@
     
     /** 處理把全國法規資料庫的斷行排版
       * 嘗試排版承接層式表單（如`ly.js`）
-      * 處理中
       */
-    var lineWidth = 32;
     var stratums = [
         {
             "name": "paragraphs",       ///< 用於CSS
@@ -52,7 +64,7 @@
         },
         {
             "name": "items",
-            "ordinal": /^\s*[\(（][一二三四五六七八九十]+[\)）]/
+            "ordinal": /^\s*[\(（][一二三四五六七八九十]+[\)）]/    ///< 有些括號是全形，有些是半形
         },
         {
             "name": "subitems",
@@ -74,7 +86,9 @@
             continue;   
         }        
         /// 增加左方的空間
-        row.firstElementChild.setAttribute("width", "");
+        row.children[0].setAttribute("width", "");
+        row.children[1].setAttribute("width", "");
+        row.children[2].setAttribute("width", "90%");
         
         var lines = pres[i].innerText.split("\n");   ///< 記得最後一行是空字串喔
         var html = "<li>";
@@ -112,6 +126,10 @@
                     }   
                     break;
                 case "：":
+                    if(lines[j][0] == "「") { ///< 憲法§48
+                        stratum = -1;
+                        break; 
+                    }
                     html += '<ol class="LER-art-' + stratums[stratum].name + '">';
                     depthArr.push(stratum);
                     break;
@@ -127,6 +145,14 @@
         list.innerHTML = html;
         list.className = (list.childElementCount == 1) ? "LER-art-singlePara" : "LER-art-paragraphs";
         pres[i].parentNode.replaceChild(list, pres[i]);
+    }
+    
+    /** 列印介面
+      */
+    var cf = document.getElementById("ctl00_cphContent_Forword");
+    if(cf) {
+        cf = cf.getElementsByTagName("PRE")[0].parentNode;
+        cf.innerHTML = cf.innerText.replace(/\s+/g, '');
     }
     
 })();

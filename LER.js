@@ -36,25 +36,29 @@ LER = function(){
                 href = linkReplacer(href);
             if(typeof href != "string")
                 throw new TypeError("function `linkReplacer` must return a string.");
-
-            var iframe = document.createElement("IFRAME");
-            iframe.style.display = "none";
-            iframe.className = "LER-iframe";
+                
             eles[i].style.position = "relative";
-            eles[i].appendChild(iframe);
             (function() {
                 //var timerID;                
                 eles[i].onmouseover = function() {
                     var isFirst = true;
                     var src = href;
                     return function() {
+                        var iframe;
                         if(isFirst) {
-                            this.lastChild.src = src;
+                            iframe = document.createElement("IFRAME");
+                            iframe.style.display = "none";
+                            iframe.className = "LER-iframe";
+                            iframe.src = src;
+                            this.appendChild(iframe);
                             isFirst = false;
                         }
+                        else iframe = this.lastChild;
                         //if(timerID) clearTimeout(timerID);
                         //timerID = setTimeout(function() {
-                            this.lastChild.style.display = "";
+                            iframe.style.display = "";
+                            iframe.style.top = (this.offsetHeight * 0.9) + "px";
+                            iframe.style[this.offsetLeft > 400 ? "right" : "left"] = "0";
                         //}, 500);
                     }
                 }();
