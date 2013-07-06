@@ -79,7 +79,9 @@ LER = function(){
             switch(child.nodeType) {
             case 1: ///< Node.ELEMENT_NODE
                 if(skippingTags.indexOf(child.tagName) >= 0) break;
-                if(/(^| )LER(-| |$)/.test(child.className)) break;  ///< 如果是已經處理過的，就不用再處理
+                if(child.classList.contains("LER-lawName")
+                    || child.classList.contains("LER-artNum")
+                ) break;  ///< 如果是已經處理過的，就不用再處理
                 if((child.tagName == "FRAME" || child.tagName == "IFRAME")
                     && child.contentDocument
                     && child.contentDocument.domain == document.domain
@@ -214,7 +216,7 @@ LER = function(){
             if(inSpecial != 'A' && lastFoundLaw.PCode) {
                 node = document.createElement('A');
                 node.setAttribute('target', '_blank');
-                node.setAttribute('href', "http://law.moj.gov.tw/LawClass/LawAll.aspx?PCode=" + lastFoundLaw.PCode + "#firstTH");
+                node.setAttribute('href', "http://law.moj.gov.tw/LawClass/LawAll.aspx?PCode=" + lastFoundLaw.PCode);
             }
             else node = document.createElement("SPAN");
             node.setAttribute('title', lastFoundLaw.name);
@@ -299,7 +301,7 @@ LER = function(){
                     ? "SearchNo.aspx?PC=" + law.PCode + "&SNo=" + SNo   ///< 多條
                     : "Single.aspx?Pcode=" + law.PCode + "&FLNO=" + SNo ///< 單條
                 ;
-                node.setAttribute('href', href + "#firstTH");
+                node.setAttribute('href', href);
                 node.setAttribute('title', law.name + "\n" + match[0]);
             }
             else {
@@ -365,7 +367,7 @@ LER = function(){
                 var num = parseInt(matches[i]);
                 if(i) html += ", ";
                 if(inSpecial == "A") html += '<span class="LER-jyi">#' + num + '</span>';
-                else html += '<a class="LER-jyi" target="_blank" href="http://www.judicial.gov.tw/constitutionalcourt/p03_01.asp?expno=' + num + '#number">#' + num + '</a>';
+                else html += '<a class="LER-jyi" target="_blank" href="http://www.judicial.gov.tw/constitutionalcourt/p03_01.asp?expno=' + num + '">#' + num + '</a>';
             }
             container.innerHTML = html;
             return container;
@@ -504,6 +506,18 @@ LER = function(){
             return node;
         }
         return {pattern: pattern, replace: replace, minLength: 8}; ///< 最短的是「99訴字1號裁定」
+    }());
+    
+    rules.push(function() {
+        var pattern = /((中華)?民國)?\s*([零一二三四五六七八九十百]+|\d+)\s*年\s*([一二三四五六七八九十]+|\d+)\s*月\s*([一二三四五六七八九十]+|\d+)\s*日/g;
+        var replace = function(match) {
+            var node = document.createElement("SPAN");
+            node.className = "LER-date";
+            node.setAttribute("title", match[0]);
+            node.innerText = parseInt(match[3]) + "." + parseInt(match[4]) + "." + parseInt(match[5]);
+            return node;
+        };
+        return {pattern: pattern, replace: replace, minLength: 8}; ///< 最短的是「民國一年一月一日」
     }());
 
     return {

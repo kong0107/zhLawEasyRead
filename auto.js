@@ -11,7 +11,6 @@ if(typeof LER == "object") (function(){
             LER.addIFrame(".LER-jyi");
             LER.addIFrame(".LER-artNum-container");
             LER.addIFrame(".LER-lawName", function(link) {
-                console.log(link);
                 return link.replace("All", "History");
             });
             LER.debugTime("add iframes");
@@ -38,9 +37,9 @@ if(typeof LER == "object") (function(){
       * 因為重新排版是在DOM讀取完畢、加上anchor之後的事情，
       * 畫面位置可能已有變化，故需重新定位到hash
       */
-    var hash = location.hash;
+    /*var hash = location.hash;
     if(hash) {
         location.hash = "";
         location.hash = hash;
-    }
+    }*/
 })();

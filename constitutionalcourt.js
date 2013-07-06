@@ -21,3 +21,7 @@ for(var i = 0; i < fonts.length; ++i) {
     if(!anchors[text]) continue;
     fonts[i].parentNode.innerHTML = '<a name="' + anchors[text] + '">' + text + '</a>';
 }
+
+/// 內嵌的話，拿掉其他東西
+if(window != top)
+    document.body.replaceChild(document.getElementById("AutoNumber1"), document.body.firstElementChild);
