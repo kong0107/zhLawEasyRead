@@ -1,0 +1,10 @@
+body,
+#main,
+#tbLaw,
+#Law-Content1 {
+    width: 100% !important;
+}
+
+#tbLaw {
+    margin: auto;
+}

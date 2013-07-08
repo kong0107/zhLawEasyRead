@@ -39,32 +39,39 @@ LER = function(){
                 
             eles[i].style.position = "relative";
             (function() {
-                //var timerID;                
+                var timerID;   
+                var iframe;             
                 eles[i].onmouseover = function() {
                     var isFirst = true;
                     var src = href;
                     return function() {
-                        var iframe;
-                        if(isFirst) {
-                            iframe = document.createElement("IFRAME");
-                            iframe.style.display = "none";
-                            iframe.className = "LER-iframe";
-                            iframe.src = src;
-                            this.appendChild(iframe);
-                            isFirst = false;
-                        }
-                        else iframe = this.lastChild;
-                        //if(timerID) clearTimeout(timerID);
-                        //timerID = setTimeout(function() {
+                        var self = this;    ///< `this` would be different later.
+                        if(timerID) clearTimeout(timerID);
+                        timerID = setTimeout(function() {
+                            if(isFirst) {
+                                iframe = document.createElement("IFRAME");
+                                iframe.style.display = "none";
+                                iframe.className = "LER-iframe";
+                                iframe.src = src;
+                                self.appendChild(iframe);
+                                isFirst = false;
+                            }
+                            //else iframe = self.lastChild;
+                            var target = (iframe.previousSibling.nodeType == 1) 
+                                ? iframe.previousSibling 
+                                : iframe.parentNode
+                            ;   ///< 法規名稱目前沒有另包container，其previousSibling會是TEXT_NODE
                             iframe.style.display = "";
-                            iframe.style.top = (this.offsetHeight * 0.9) + "px";
-                            iframe.style[this.offsetLeft > 400 ? "right" : "left"] = "0";
-                        //}, 500);
-                    }
+                            iframe.style.top = target.offsetHeight * 0.9 + "px";
+                            iframe.style[target.offsetLeft > 400 ? "right" : "left"] = "0";
+                        }, 350);
+                    };
                 }();
-                eles[i].onmouseout = function(){
-                    //clearTimeout(timerID);
-                    this.lastChild.style.display = "none";
+                eles[i].onmouseout = function(event){
+                    var e = event.toElement || event.relatedTarget;
+                    if(!e || e.parentNode == this || e == this) return;
+                    clearTimeout(timerID);
+                    if(iframe) this.lastChild.style.display = "none";
                 };
             })();
         }
@@ -513,7 +520,7 @@ LER = function(){
     }());
     
     rules.push(function() {
-        var pattern = /((中華)?民國)?\s*([零一二三四五六七八九十百]+|\d+)\s*年\s*([一二三四五六七八九十]+|\d+)\s*月\s*([一二三四五六七八九十]+|\d+)\s*日/g;
+        var pattern = /((中華)?民國)?\s*([零０一二三四五六七八九十百]+|\d+)\s*年\s*([一二三四五六七八九十]+|\d+)\s*月\s*([一二三四五六七八九十]+|\d+)\s*日/g;
         var replace = function(match) {
             var node = document.createElement("SPAN");
             node.className = "LER-date";

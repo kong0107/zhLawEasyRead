@@ -22,6 +22,13 @@ for(var i = 0; i < fonts.length; ++i) {
     fonts[i].parentNode.innerHTML = '<a name="' + anchors[text] + '">' + text + '</a>';
 }
 
-/// 內嵌的話，拿掉其他東西
-if(window != top)   ///< 該頁居然有兩個 table#AutoNumber1
+/// 內嵌的話...
+if(window != top)   {
+    /// 拿掉外框；該頁居然有兩個 table#AutoNumber1
     document.body.replaceChild(document.getElementsByTagName("TABLE")[4], document.body.firstElementChild);
+    /*var ths = document.getElementsByTagName("TH");
+    for(var i = 0; i < ths; ++i) {
+        ths[i].setAttribute("width", "");
+        ths[i].style.width = "4em";
+    }*/
+}
