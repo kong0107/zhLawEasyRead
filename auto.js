@@ -2,7 +2,7 @@ if(typeof LER == "object") (function(){
     if(LER.autoParse instanceof Element) {
         LER.parse(LER.autoParse);
         LER.debugTime("parsed all");
-        
+
         /** 加上跳出的iframe，但只在頁面範圍夠大之時
           * 主要是不想讓iframe中又有iframe，但又要允許如司法院裁判書查詢系統那種有用frame的網站
           * 未確認評律網

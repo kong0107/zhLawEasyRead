@@ -2,7 +2,7 @@
 "manifest_version": 2,
 "name": "法規亦毒氣",
 "description": "將網頁中的法規與條號都轉變成連結，讓您快速查閱指定條文。",
-"version": "0.3.14",
+"version": "0.3.14.4",
 "icons" : {"128": "icon.png"},
 "options_page": "options.html",
 "browser_action": {
@@ -69,7 +69,11 @@
             "http://db.lawbank.com.tw/FLAW/PrintFLAW*"
         ],
         "css": ["lawbank.css"],
-        "js": ["pre32.js"]
+        "js": [
+            "lawbank.js",
+            "pre32.js"
+        ],
+        "run_at": "document_end"
     },
     {
         "matches": ["<all_urls>"],

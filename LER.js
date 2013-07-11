@@ -36,11 +36,11 @@ LER = function(){
                 href = linkReplacer(href);
             if(typeof href != "string")
                 throw new TypeError("function `linkReplacer` must return a string.");
-                
+
             eles[i].style.position = "relative";
             (function() {
-                var timerID;   
-                var iframe;             
+                var timerID;
+                var iframe;
                 eles[i].onmouseover = function() {
                     var isFirst = true;
                     var src = href;
@@ -57,8 +57,8 @@ LER = function(){
                                 isFirst = false;
                             }
                             //else iframe = self.lastChild;
-                            var target = (iframe.previousSibling.nodeType == 1) 
-                                ? iframe.previousSibling 
+                            var target = (iframe.previousSibling.nodeType == 1)
+                                ? iframe.previousSibling
                                 : iframe.parentNode
                             ;   ///< 法規名稱目前沒有另包container，其previousSibling會是TEXT_NODE
                             iframe.style.display = "";
@@ -266,7 +266,6 @@ LER = function(){
             var html = "";  ///< 待會直接用innerHTML
             var SNo = "";   ///< 連結
             reSplitter.lastIndex = 0;
-            var num1, num2;
 
             // 例如比對到 "第十八條之一第一項第九類、第二十六條第二款至第四款"，其執行結果為
             var parts = match[0].split(reSplitter);        //#=> ["第十八條之一第一項第九類", "第二十六條第二款", "第四款"]
@@ -277,7 +276,7 @@ LER = function(){
                 for(var j = 1; j < scraps.length; ++j) {
                     rePart.lastIndex = 0;
                     var m = rePart.exec(scraps[j]);
-                    num1 = parseInt(m[1]);
+                    var num1 = parseInt(m[1]);
                     switch(m[2]) {
                     case "條":
                         single = "§" + num1;
@@ -288,7 +287,7 @@ LER = function(){
                         single += "第" + num1 + m[2];
                     }
                     if(m[3]) {  ///< 理論上只在「條」的情況出現
-                        num2 = parseInt(m[4]);
+                        var num2 = parseInt(m[4]);
                         single += "-" + num2;
                         SNo += "." + num2;
                     }
@@ -310,7 +309,7 @@ LER = function(){
                 var href = "http://law.moj.gov.tw/LawClass/Law";
                 href += /[,-]/.test(SNo)
                     ? "SearchNo.aspx?PC=" + law.PCode + "&SNo=" + SNo   ///< 多條
-                    : "Single.aspx?Pcode=" + law.PCode + "&FLNO=" + SNo ///< 單條
+                    : "Single.aspx?Pcode=" + law.PCode + "&FLNO=" + SNo.replace(".", "-") ///< 單條
                 ;
                 node.setAttribute('href', href);
                 node.setAttribute('title', law.name + "\n" + match[0]);
@@ -334,29 +333,22 @@ LER = function(){
             ++counter;
             var num1 = parseInt(match[1]);
             var text = "§" + num1;
-            var flno = num1;
             if(match[3]) {    /// 處理全國法規資料庫的「第 15-1 條」，不會是中文數字
                 text += match[2];
-                flno += "." + match[3];
             }
             /// 處理預設法規。機制參閱此處變數宣告之處
             var law = (isImmediateAfterLaw && match.index == 0 || !defaultLaw) ? lastFoundLaw : defaultLaw;
-            var node;
-            if(inSpecial != 'A' && !!law) {
-                node = document.createElement('A');
-                node.setAttribute('target', '_blank');
-                node.setAttribute('href', "http://law.moj.gov.tw/LawClass/LawSingle.aspx?Pcode=" + law.PCode + "&FLNO=" + flno);
-                node.setAttribute('title', law.name + "\n" + match[0]);
-            }
-            else {
-                node = document.createElement("SPAN");
-                node.setAttribute('title', match[0]);
-            }
-            node.className = "LER-artNum";
-            node.appendChild(document.createTextNode(text));
+            var node = document.createElement("SPAN");
+            node.className = "LER-artNum-container";
+            var html = ' class="LER-artNum" title="' + match[0] + '">' + text + '</';
+            var href = 'http://law.moj.gov.tw/LawClass/LawSingle.aspx?Pcode=' + law.PCode + '&FLNO=' + text.substr(1);
+            node.innerHTML = (inSpecial == 'A' || !law)
+                ? '<span' + html + 'span>'
+                : '<a target="_blank" href="' + href + '"' + html + 'a>'
+            ;
             return node;
         };
-        return {pattern: pattern, replace: replace, minLength: 3}; ///< 最短的是「第一條」
+        return {pattern: pattern, replace: replace, minLength: 3}; ///< 最短的是「第1條」
     }());
 
     /** 大法官釋字
@@ -410,7 +402,7 @@ LER = function(){
             "([臺台]?[北中]|高雄?|最)高等?行(政法院)?",
             "(([臺台]灣)?高雄)?少年?及?家事?法院",
             "([北板士雄宜]|最?高)[院檢]",
-            branches + "高分檢"
+            branches + "高分[院檢]"
         ];
         var pattern = new RegExp("(" + patterns.join(")|(") + ")", 'g');
 
@@ -518,7 +510,7 @@ LER = function(){
         }
         return {pattern: pattern, replace: replace, minLength: 8}; ///< 最短的是「99訴字1號裁定」
     }());
-    
+
     rules.push(function() {
         var pattern = /((中華)?民國)?\s*([零０一二三四五六七八九十百]+|\d+)\s*年\s*([一二三四五六七八九十]+|\d+)\s*月\s*([一二三四五六七八九十]+|\d+)\s*日/g;
         var replace = function(match) {
