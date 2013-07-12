@@ -95,9 +95,7 @@ LER = function(){
             switch(child.nodeType) {
             case 1: ///< Node.ELEMENT_NODE
                 if(skippingTags.indexOf(child.tagName) >= 0) break;
-                if(child.classList.contains("LER-lawName")
-                    || child.classList.contains("LER-artNum")
-                ) break;  ///< 如果是已經處理過的，就不用再處理
+                if(/(^| )LER-(?!defaultLaw)/.test(child.className)) break;
                 if((child.tagName == "FRAME" || child.tagName == "IFRAME")
                     && child.contentDocument
                     && child.contentDocument.domain == document.domain
@@ -457,7 +455,7 @@ LER = function(){
             if(inSpecial != 'A' && courtID) {
                 node = document.createElement("A");
                 node.setAttribute('target', '_blank');
-                if(!isProsecution) 
+                if(!isProsecution)
                     node.setAttribute('href', "http://" + courtID + ".judicial.gov.tw");
                 else {
                     var prosecuteID;
