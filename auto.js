@@ -10,7 +10,7 @@ if(typeof LER == "object") (function(){
         if(window.innerHeight > 300 && window.innerWidth > 400) {
             LER.addIFrame(".LER-jyi");
             LER.addIFrame(".LER-artNum-container");
-            LER.addIFrame(".LER-lawName", function(link) {
+            LER.addIFrame(".LER-lawName-container", function(link) {
                 return link.replace("All", "History");
             });
             LER.debugTime("add iframes");

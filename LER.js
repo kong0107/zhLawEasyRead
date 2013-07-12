@@ -56,14 +56,18 @@ LER = function(){
                                 self.appendChild(iframe);
                                 isFirst = false;
                             }
-                            //else iframe = self.lastChild;
-                            var target = (iframe.previousSibling.nodeType == 1)
-                                ? iframe.previousSibling
-                                : iframe.parentNode
-                            ;   ///< 法規名稱目前沒有另包container，其previousSibling會是TEXT_NODE
-                            iframe.style.display = "";
-                            iframe.style.top = target.offsetHeight * 0.9 + "px";
-                            iframe.style[target.offsetLeft > 400 ? "right" : "left"] = "0";
+                            var s = iframe.style;
+                            s.display = "";
+                            /** 如果文字有換行的話，內嵌視窗的定位方式會不一樣
+                              * 還不知道有換行的話該怎麼定位才理想，目前還是沒法處理法規名稱換行的情形
+                              */
+                            var target = iframe == self.firstElementChild
+                                ? self
+                                : self.firstElementChild
+                            ;
+                            s.top = target.offsetHeight * 0.9 + "px";
+                            if(self.offsetLeft <= 400) s.left = "0";
+                            else s.right = "-20px";
                         }, 350);
                     };
                 }();
@@ -232,8 +236,8 @@ LER = function(){
             }
             else node = document.createElement("SPAN");
             node.setAttribute('title', lastFoundLaw.name);
-            node.className = "LER-lawName";
-            node.appendChild(document.createTextNode(match[0]));
+            node.className = "LER-lawName-container";
+            node.innerHTML = '<span class="LER-lawName">' + match[0] + '</span>';
             return node;
         };
 
