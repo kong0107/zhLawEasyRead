@@ -77,10 +77,11 @@ LER = function(){
         }
     };
 
-    /** 2013-06-22開始實作的又一種作法
-      * （好啦我知道一直改核心演算法很不好）
-      * 無論幾種要轉換的東西，一個 Text 節點即只處理一次
-      * 用recursive DFS call
+    /** 文字轉換的主函數：每個DOM node都跑一次
+      * * 無論幾種要轉換的東西，一個 Text 節點即只處理一次
+      * * 用recursive DFS call，故通常會與網頁上的順序相同
+      * * 會跳過 skippingTags 指定的標籤
+      * * 會跳過前次呼叫時所做出來的節點
       */
     var parseElement = function(ele, inSpecial) {
         for(var next, child = ele.firstChild; child; child = next) {
@@ -382,14 +383,13 @@ LER = function(){
       * 公懲會還沒有加進來
       *
       * Notes:
-      * * 現實中沒有「福建高等法院」和其檢察署，雖然有「福建高院金門分院」和其檢署
+      * * 雖然有「福建高院金門分院」和其檢署，但其實沒有「福建高等法院」和其檢察署。
       * * 智財法院對應的檢察署是「高檢署智財分署」，而不是「智財高分檢」或「智財法院檢察署」
       *
       * Bugs:
       * * 「大『雄檢』查了抽屜」會被比對到
       * * 福建高院會對應到台灣高院
       * * 智財分檢署不會比對到，不過倒是比對到了「智財法院檢察署」
-      * * 直接拿法院的代稱來對應檢察署，智財分檢署和板院會是錯誤的（分別應是thip和pcc）
       */
     rules.push(function() {
         var provinces = "([臺台]灣|福建)?";
@@ -406,7 +406,7 @@ LER = function(){
         ];
         var pattern = new RegExp("(" + patterns.join(")|(") + ")", 'g');
 
-        /// 找關鍵字，如果有keyword，那麼其mapping中有該字的即為該法院
+        /// 找關鍵字，如果有keyword，那麼其mapping中有該字的即為該法院；此處順序有差
         var mappings = [
             { keyword: "", mapping: { ///< 單憑一字即可辨認是何法院的
                 TPP:"懲", IPC:"智", KSY:"少",
@@ -453,8 +453,17 @@ LER = function(){
             if(inSpecial != 'A' && courtID) {
                 node = document.createElement("A");
                 node.setAttribute('target', '_blank');
-                var subHref = isProsecution ? ("www." + courtID + ".moj") : (courtID + ".judicial");
-                node.setAttribute('href', "http://" + subHref + ".gov.tw");
+                if(!isProsecution) 
+                    node.setAttribute('href', "http://" + courtID + ".judicial.gov.tw");
+                else {
+                    var prosecuteID;
+                    switch(courtID) {
+                    case "PCD": prosecuteID = "pcc"; break;
+                    case "IPC": prosecuteID = "thip"; break;
+                    default: prosecuteID = courtID.toLowerCase();
+                    }
+                    node.setAttribute('href', "http://www." + prosecuteID + ".moj.gov.tw");
+                }
             }
             else node = document.createElement("SPAN");
             node.setAttribute("title", courtID

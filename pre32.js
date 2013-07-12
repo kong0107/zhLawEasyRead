@@ -16,7 +16,7 @@ var stratums = [
     },
     {
         "name": "items",
-        "ordinal": /^\s*[\(（][一二三四五六七八九十]+[\)）]/    ///< 有些括號是全形，有些是半形
+        "ordinal": /^\s*[\(（][一二三四五六七八九十]+[\)）]/    ///< 有些括號是全形，有些是半形（如所得稅法25條2項2款）
     },
     {
         "name": "subitems",
@@ -46,7 +46,7 @@ for(var i = 0; i < pres.length;) {
     var html = "<li>";
     var depthArr = [];
     for(var j = 0; j < lines.length; ++j) {
-        var endDetect = /(：|。|（刪除）)$/.exec(html);
+        var endDetect = /(：|︰|。|（刪除）)$/.exec(html); ///< 兩種冒號不同
         if(endDetect) {
             var stratum = -1;
             for(var k = stratums.length - 1; k >= 0; --k) {
@@ -56,9 +56,12 @@ for(var i = 0; i < pres.length;) {
                 }
             }
             
+            /// 唔，有些分款的項是用句點結尾的，先這樣繞過去吧...
+            if(stratum >= 0 && lines[j].indexOf("一、") == 0) endDetect[1] = "：";
+            
             switch(endDetect[1]) {
             case "。":
-                /// 處理所得稅法中，一個款／目中又分段的情形
+                /// 處理所得稅法中，同一層之中又分段的情形，例如14條1項2類
                 if(stratum < 0) {
                     html += "<br />";
                     break;
@@ -78,7 +81,8 @@ for(var i = 0; i < pres.length;) {
                 }   
                 break;
             case "：":
-                if(lines[j][0] == "「") { ///< 憲法§48
+            case "︰":   ///< 這兩個冒號不同
+                if(lines[j][0] == "「") { ///< only for 憲法§48
                     stratum = -1;
                     break; 
                 }
