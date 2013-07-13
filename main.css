@@ -9,7 +9,8 @@
 .LER-jyi-container,
 .LER-court ,
 .LER-trialNum,
-.LER-date {
+.LER-date,
+.LER-percent {
     padding: 0 0.15em;
     background-color: #eee;
     border: 1px solid #ccc;

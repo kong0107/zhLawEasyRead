@@ -82,7 +82,10 @@ for(var i = 0; i < pres.length;) {
                 break;
             case "：":
             case "︰":   ///< 這兩個冒號不同
-                if(lines[j][0] == "「") { ///< only for 憲法§48
+                /** 處理憲法§48
+                  * 其實有「算式」的條文也會出錯，例如所得稅法§66-6的第一項和第二項就很難分
+                  */
+                if(lines[j][0] == "「") {
                     stratum = -1;
                     break; 
                 }

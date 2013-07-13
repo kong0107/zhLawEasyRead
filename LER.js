@@ -24,21 +24,27 @@ LER = function(){
 
     /** 加上彈出式內嵌視窗
       * 只在要顯現時才去讀取該網頁，以避免無窮iframe的問題，也可節省流量考量
-      * 目前只能幫已經有連結的對象加上
+      * 目前只處理有href屬性的
       * \param linkReplacer 把連結的網址轉換成要iframe的網址，不指定即不轉換
       */
     var addIFrame = function (selector, linkReplacer) {
         var eles = document.querySelectorAll(selector);
         for(var i = 0; i < eles.length; ++i) {
+            ///< 已處理過的就不管了
+            if(eles[i].lastElementChild 
+                && eles[i].lastElementChild.tagName == "IFRAME"
+            ) continue;
+            
             var href = eles[i].getAttribute("href");
-            if(!href) continue;
+            if(!href) continue; ///< 沒有連結的也跳過
             if(typeof linkReplacer == "function")
                 href = linkReplacer(href);
             if(typeof href != "string")
                 throw new TypeError("function `linkReplacer` must return a string.");
 
             eles[i].style.position = "relative";
-            (function() {
+            (function() { 
+                /// 因為mouseOver和mouseOut要共用變數，所以再用一個匿名函數包起來
                 var timerID;
                 var iframe;
                 eles[i].onmouseover = function() {
@@ -95,7 +101,7 @@ LER = function(){
             switch(child.nodeType) {
             case 1: ///< Node.ELEMENT_NODE
                 if(skippingTags.indexOf(child.tagName) >= 0) break;
-                if(/(^| )LER-(?!defaultLaw)/.test(child.className)) break;
+                if(/(^| )LER-(?!defaultLaw|art-)/.test(child.className)) break;
                 if((child.tagName == "FRAME" || child.tagName == "IFRAME")
                     && child.contentDocument
                     && child.contentDocument.domain == document.domain
@@ -522,23 +528,57 @@ LER = function(){
         return {pattern: pattern, replace: replace, minLength: 8}; ///< 最短的是「99訴字1號裁定」
     }());
 
-    rules.push(function() {
-        var pattern = /((中華)?民國)?\s*([零０一二三四五六七八九十百]+|\d+)\s*年\s*([一二三四五六七八九十]+|\d+)\s*月\s*([一二三四五六七八九十]+|\d+)\s*日/g;
-        var replace = function(match) {
+    rules.push({
+        pattern: /((中華)?民國)?\s*([零０一二三四五六七八九十百]+|\d+)\s*年\s*([一二三四五六七八九十]+|\d+)\s*月\s*([一二三四五六七八九十]+|\d+)\s*日/g,
+        replace: function(match) {
             var node = document.createElement("SPAN");
             node.className = "LER-date";
             node.setAttribute("title", match[0]);
             node.innerText = parseInt(match[3]) + "." + parseInt(match[4]) + "." + parseInt(match[5]);
             return node;
-        };
-        return {pattern: pattern, replace: replace, minLength: 8}; ///< 最短的是「民國一年一月一日」
-    }());
+        },
+        minLength: 8 ///< 最短的是「民國一年一月一日」
+    });
+    
+    /** 百分比
+      * 不想轉換「百分之百」，但又想轉換「百分之一百五十」
+      * 千分比符號不在大五碼裡，為避免複製到記事本時出錯，目前不處理
+      * 小數點的範例可見所得稅法§66-6
+      */
+    rules.push({
+        pattern: /百分之([一二三四五六七八九十][一二三四五六七八九十百]*)([‧點]([零０一二三四五六七八九]+))?/g,
+        replace: function(match) {
+            debug("percent");
+            var node = document.createElement("SPAN");
+            node.className = "LER-percent";
+            node.setAttribute("title", match[0]);
+            var text = parseInt(match[1]);
+            if(match[2]) text += "." + parseInt(match[3]);
+            node.innerText = text + "％";
+            return node;
+        },
+        minLength: 4 ///< 最短的是「百分之一」
+    });
 
     return {
         parse: function() {
             this.counter = 0;
             parseElement.apply(this, arguments);
             debug(counter + " has been rendered");
+            
+            /** 加上跳出的iframe，但只在頁面範圍夠大之時
+              * 主要是不想讓iframe中又有iframe，但又要允許如司法院裁判書查詢系統那種有用frame的網站
+              * 未確認評律網
+              */
+            if(window.innerHeight > 300 && window.innerWidth > 400) {
+                addIFrame(".LER-jyi");
+                addIFrame(".LER-artNum-container");
+                addIFrame(".LER-lawName-container", function(link) {
+                    return link.replace("All", "History");
+                });
+                debug("add iframes");
+            }
+            else debug("window size too small, no iframes set.");            
         },
         addIFrame: addIFrame,
         setDefaultLaw: setDefaultLaw,
