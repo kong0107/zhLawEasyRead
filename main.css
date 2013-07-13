@@ -17,15 +17,6 @@
     font-weight: bold;
 }
 
-.LER-iframe {
-    position: absolute;
-    width: 400px;
-    height: 250px;
-    border: 2px solid #ccc;
-    background-color: #fff;
-    z-index: 1;
-}
-
 /** 項類款目的格式
   * 英文參照http://law.moj.gov.tw/Service/standard_en.aspx
   */
@@ -60,4 +51,61 @@
 .LER-art-paragraphs li {
     line-height: 150%;
     padding: 0.15em 0;
+}
+
+/** 浮動視窗
+  */
+.LER-popup {
+    position: absolute;
+    width: 400px;
+    margin: 0;
+    padding: 0;
+}
+
+.LER-popup-head {
+    width: 0;
+    border: solid transparent;
+    border-width: 0.75em 1em 1em 1em;
+    border-bottom-color: #ddd;
+}
+
+.LER-popup-body {
+    border: 1px solid #ddd;
+    background-color: #ddd;
+}
+
+.LER-popup-pin {
+    float: right;
+    font-size: small;
+}
+
+.LER-popup-tabs {
+    margin: 0.1em 0 -1px 0.5em;
+    padding: 0;
+}
+
+.LER-popup-tabs > li {
+    display: inline;
+    border: 1px solid #ccc;
+    padding: 0 0.2em;
+    margin: 0 0.2em 0 0;
+    cursor: pointer;
+    background-color: #eee;
+}
+
+.LER-popup-contents {
+    background-color: #eee;
+    border-top: 1px solid #ccc;
+    padding: 0 0.1em;
+}
+
+.LER-popup-contents > div {
+    width: 100%;
+    height: 100%;
+}
+
+.LER-popup-contents iframe {
+    width: 100%;
+    height: 225px;
+    border: 0;
 }

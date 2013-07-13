@@ -22,69 +22,104 @@ LER = function(){
         return num;
     }
 
-    /** 加上彈出式內嵌視窗
-      * 只在要顯現時才去讀取該網頁，以避免無窮iframe的問題，也可節省流量考量
-      * 目前只處理有href屬性的
-      * \param linkReplacer 把連結的網址轉換成要iframe的網址，不指定即不轉換
+    /** 加上浮動視窗
+      * 供轉換規則中的replace呼叫
       */
-    var addIFrame = function (selector, linkReplacer) {
-        var eles = document.querySelectorAll(selector);
-        for(var i = 0; i < eles.length; ++i) {
-            ///< 已處理過的就不管了
-            if(eles[i].lastElementChild 
-                && eles[i].lastElementChild.tagName == "IFRAME"
-            ) continue;
-            
-            var href = eles[i].getAttribute("href");
-            if(!href) continue; ///< 沒有連結的也跳過
-            if(typeof linkReplacer == "function")
-                href = linkReplacer(href);
-            if(typeof href != "string")
-                throw new TypeError("function `linkReplacer` must return a string.");
+    var addPopup = function(ele, tabInfos, defaultTab) {
+        /** 太小的視窗即不再做浮動視窗
+          * 主要是不想讓iframe中又有iframe，但又要允許如司法院裁判書查詢系統那種有用frame的網站
+          * 未確認評律網
+          */
+        if(window.innerHeight < 300 || window.innerWidth < 400) return;
 
-            eles[i].style.position = "relative";
-            (function() { 
-                /// 因為mouseOver和mouseOut要共用變數，所以再用一個匿名函數包起來
-                var timerID;
-                var iframe;
-                eles[i].onmouseover = function() {
-                    var isFirst = true;
-                    var src = href;
-                    return function() {
-                        var self = this;    ///< `this` would be different later.
-                        if(timerID) clearTimeout(timerID);
-                        timerID = setTimeout(function() {
-                            if(isFirst) {
-                                iframe = document.createElement("IFRAME");
-                                iframe.style.display = "none";
-                                iframe.className = "LER-iframe";
-                                iframe.src = src;
-                                self.appendChild(iframe);
-                                isFirst = false;
-                            }
-                            var s = iframe.style;
-                            s.display = "";
-                            /** 如果文字有換行的話，內嵌視窗的定位方式會不一樣
-                              * 還不知道有換行的話該怎麼定位才理想，目前還是沒法處理法規名稱換行的情形
-                              */
-                            var target = iframe == self.firstElementChild
-                                ? self
-                                : self.firstElementChild
-                            ;
-                            s.top = target.offsetHeight * 0.9 + "px";
-                            if(self.offsetLeft <= 400) s.left = "0";
-                            else s.right = "-20px";
-                        }, 350);
+        var timerID;
+        var popup;
+        var isFirst = true;
+        var isPinned = false;
+        if(!defaultTab || defaultTab < 0 || defaultTab >= tabInfos.length) defaultTab = 0;
+
+        ele.onmouseover = function(mouseEvent) {
+            var self = this;
+            var x = mouseEvent.pageX;
+            var y = mouseEvent.pageY;
+            if(timerID) clearTimeout(timerID);
+            timerID = setTimeout(function() {
+                if(isFirst) {
+                    popup = document.createElement("DIV");
+                    popup.className = "LER-popup";
+                    popup.onmouseout = function(event) {
+                        var e = event.toElement || event.relatedTarget;
+                        if(isPinned || !e || e == self || e.parentNode == self) return;
+                        for(var cur = e; cur.nodeType == 1; cur = cur.parentNode)
+                            if(cur == this) return;
+                        this.style.display = "none";
                     };
-                }();
-                eles[i].onmouseout = function(event){
-                    var e = event.toElement || event.relatedTarget;
-                    if(!e || e.parentNode == this || e == this) return;
-                    clearTimeout(timerID);
-                    if(iframe) this.lastChild.style.display = "none";
-                };
-            })();
-        }
+                    popup.innerHTML = '<div class="LER-popup-head"></div>'
+                        + '<div class="LER-popup-body">'
+                            + '<label class="LER-popup-pin"><input type="checkbox" />釘住視窗</label>'
+                            + '<ul class="LER-popup-tabs"></ul>'
+                            + '<div class="LER-popup-contents"></div>'
+                        + '</div>'
+                    ;
+                    var checkbox = popup.getElementsByTagName("INPUT")[0];
+                    checkbox.onchange = function() {isPinned = this.checked;};
+                    var tabs = popup.childNodes[1].childNodes[1];
+                    var contents = popup.childNodes[1].childNodes[2];
+                    for(var i = 0; i < tabInfos.length; ++i) {
+                        var li = document.createElement("LI");
+                        li.innerText = tabInfos[i].title;
+                        li.onclick = function() {
+                            for(var j = 0; j < tabs.childNodes.length; ++j) {
+                                var t = tabs.childNodes[j];
+                                var c = contents.childNodes[j];
+                                if(t != this) {
+                                    t.style.fontWeight = "";
+                                    t.style.borderBottomColor = "";
+                                    c.style.display = "none";
+                                }
+                                else c.style.display = "";
+                            }
+                            this.style.fontWeight = "bold";
+                            this.style.borderBottomColor = "transparent";
+                        };
+                        tabs.appendChild(li);
+
+                        var div = document.createElement("DIV");
+                        div.innerHTML = tabInfos[i].content;
+                        div.style.display = "none";
+                        contents.appendChild(div);
+
+                        if(i == defaultTab) {
+                            li.style.fontWeight = "bold";
+                            li.style.borderBottomColor = "transparent";
+                            div.style.display = "";
+                        }
+                    }
+                    document.body.appendChild(popup);
+                    isFirst = false;
+                }
+                var s = popup.style;
+                s.top = y + "px";
+                s.display = ""; ///< 如果正在{display: none;}的狀態，offsetWidth似乎不會正確
+                var left = (x + popup.offsetWidth < document.body.offsetWidth)
+                    ? ((x < 100) ? 0 : x - 100)
+                    : (document.body.offsetWidth - popup.offsetWidth)
+                ;
+                s.left = left + "px";
+                var arrow = popup.firstChild;
+                arrow.style.marginLeft = x - left - (arrow.offsetWidth / 2) + "px";
+            }, 350);
+        };
+        ele.onmouseout = function(event) {
+            var e = event.toElement || event.relatedTarget;
+            if(isPinned
+                || !e || e.parentNode == this || e == this
+                || (popup && (e.parentNode == popup || e == popup))
+            ) return;
+            clearTimeout(timerID);
+            timerID = null;
+            if(popup) popup.style.display = "none";
+        };
     };
 
     /** 文字轉換的主函數：每個DOM node都跑一次
@@ -242,6 +277,10 @@ LER = function(){
             node.setAttribute('title', lastFoundLaw.name);
             node.className = "LER-lawName-container";
             node.innerHTML = '<span class="LER-lawName">' + match[0] + '</span>';
+            addPopup(node, [{
+                title: "法規沿革",
+                content: '<iframe src="http://law.moj.gov.tw/LawClass/LawHistory.aspx?PCode=' + lastFoundLaw.PCode + '"></iframe>'
+            }]);
             return node;
         };
 
@@ -306,20 +345,23 @@ LER = function(){
                 if(i == parts.length - 1) break;    ///< 處理連接詞
                 html += ((glues[i] == ",") ? "" : " ") + glues[i] + " ";
             }
-
             /// 處理預設法規。機制參閱此處變數宣告之處
             var law = (isImmediateAfterLaw && match.index == 0 || !defaultLaw) ? lastFoundLaw : defaultLaw;
             isImmediateAfterLaw = false;
 
-            var node;
-            if(inSpecial != 'A' && !!law && SNo && law.PCode) {  ///< 如果是「前條第一款」，那就還不會加上連結
-                node = document.createElement('A');
-                node.setAttribute('target', '_blank');
-                var href = "http://law.moj.gov.tw/LawClass/Law";
+            var href;
+            if(law && SNo && law.PCode) {
+                href = "http://law.moj.gov.tw/LawClass/Law";
                 href += /[,-]/.test(SNo)
                     ? "SearchNo.aspx?PC=" + law.PCode + "&SNo=" + SNo   ///< 多條
                     : "Single.aspx?Pcode=" + law.PCode + "&FLNO=" + SNo.replace(".", "-") ///< 單條
                 ;
+            }
+
+            var node;
+            if(inSpecial != 'A' && href) {  ///< 如果是「前條第一款」，那就還不會加上連結
+                node = document.createElement('A');
+                node.setAttribute('target', '_blank');
                 node.setAttribute('href', href);
                 node.setAttribute('title', law.name + "\n" + match[0]);
             }
@@ -329,6 +371,11 @@ LER = function(){
             }
             node.className = "LER-artNum-container";
             node.innerHTML = html;
+
+            if(href) addPopup(node, [{
+                title: "條文內容",
+                content: '<iframe src="' + href + '"></iframe>'
+            }]);
             return node;
         };
         return {pattern: pattern, replace: replace, minLength: 3}; ///< 最短的是「第一條」
@@ -355,6 +402,10 @@ LER = function(){
                 ? '<span' + html + 'span>'
                 : '<a target="_blank" href="' + href + '"' + html + 'a>'
             ;
+            addPopup(node, [{
+                title: "條文內容",
+                content: '<iframe src="' + href + '"></iframe>'
+            }]);
             return node;
         };
         return {pattern: pattern, replace: replace, minLength: 3}; ///< 最短的是「第1條」
@@ -372,16 +423,30 @@ LER = function(){
             var container = document.createElement("SPAN");
             container.setAttribute("title", match[0]);
             container.className = "LER-jyi-container";
-            var html = "釋";
+
             reNumber.lastIndex = 0;
             var matches = match[0].match(reNumber);
+
+            container.innerHTML = "釋";
             for(var i = 0; i < matches.length; ++i) {
                 var num = parseInt(matches[i]);
-                if(i) html += ", ";
-                if(inSpecial == "A") html += '<span class="LER-jyi">#' + num + '</span>';
-                else html += '<a class="LER-jyi" target="_blank" href="http://www.judicial.gov.tw/constitutionalcourt/p03_01.asp?expno=' + num + '">#' + num + '</a>';
+                var href = "http://www.judicial.gov.tw/constitutionalcourt/p03_01.asp?expno=" + num;
+                if(i) container.appendChild(document.createTextNode(", "));
+                var node;
+                if(inSpecial != "A") {
+                    node = document.createElement("A");
+                    node.target = "_blank";
+                    node.href = href;
+                }
+                else node = document.createElement("SPAN");
+                node.className = "LER-jyi";
+                node.innerText = "#" + num;
+                addPopup(node, [{
+                    title: "解釋文",
+                    content: '<iframe src="' + href + '"></iframe>'
+                }]);
+                container.appendChild(node);
             }
-            container.innerHTML = html;
             return container;
         };
         return {pattern: pattern, replace: replace, minLength: 4}; ///< 最短的是「釋字一號」
@@ -539,7 +604,7 @@ LER = function(){
         },
         minLength: 8 ///< 最短的是「民國一年一月一日」
     });
-    
+
     /** 百分比
       * 不想轉換「百分之百」，但又想轉換「百分之一百五十」
       * 千分比符號不在大五碼裡，為避免複製到記事本時出錯，目前不處理
@@ -565,22 +630,7 @@ LER = function(){
             this.counter = 0;
             parseElement.apply(this, arguments);
             debug(counter + " has been rendered");
-            
-            /** 加上跳出的iframe，但只在頁面範圍夠大之時
-              * 主要是不想讓iframe中又有iframe，但又要允許如司法院裁判書查詢系統那種有用frame的網站
-              * 未確認評律網
-              */
-            if(window.innerHeight > 300 && window.innerWidth > 400) {
-                addIFrame(".LER-jyi");
-                addIFrame(".LER-artNum-container");
-                addIFrame(".LER-lawName-container", function(link) {
-                    return link.replace("All", "History");
-                });
-                debug("add iframes");
-            }
-            else debug("window size too small, no iframes set.");            
         },
-        addIFrame: addIFrame,
         setDefaultLaw: setDefaultLaw,
         autoParse: document.body,
         showJYI: function(num) {
