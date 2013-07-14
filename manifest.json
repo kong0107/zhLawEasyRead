@@ -2,7 +2,7 @@
 "manifest_version": 2,
 "name": "法規亦毒氣",
 "description": "將網頁中的法規與條號都轉變成連結，讓您快速查閱指定條文。",
-"version": "0.4.0.8",
+"version": "0.4.1",
 "icons" : {"128": "icon.png"},
 "options_page": "options.html",
 "browser_action": {
@@ -15,6 +15,8 @@
         "matches": ["<all_urls>"],
         "exclude_matches": [
             "http://law.moj.gov.tw/Eng/*",
+            "http://law.moj.gov.tw/LawClass/ExContent_print.aspx*",
+            "http://jirs.judicial.gov.tw/FJUD/PrintFJUD03_0.aspx*",
             "*://drive.google.com/keep*",
             "*://docs.google.com/*"
         ],
