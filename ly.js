@@ -1,3 +1,7 @@
+var title = document.getElementsByTagName("TITLE")[0];
+if(title && title.innerText == "404 Not Found")
+    document.body.innerHTML = "查無資料";
+
 /*
 Bugs:
 2. 所得稅法§14有「第某類」，§17有「1.」（第某目之一）和不知道該怎麼叫的「(1)」。

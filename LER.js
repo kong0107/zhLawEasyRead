@@ -25,6 +25,15 @@ LER = function(){
 
     /** 加上浮動視窗
       * 供轉換規則中的replace呼叫
+      * \param tabInfos Object with members:
+      * * title: required string.
+      * * content: required string, html.
+      * * link: optional string, URL which the title should link to.
+      * * onFirstShow: optional function, called by the content node getting showing up.
+      *
+      * 應改為：
+      * * 第一次按該頁籤（及預設顯示頁籤）：執行一由tabInfos指定來的函數，將函數執行結果（為一Node）用appendChild加入DOM
+      * * 第二次之後，即直接顯示該Node－－可用CSS的{display: none}，也可以用Node#replaceChild
       */
     var addPopup = function(ele, tabInfos, defaultTab) {
         /** 太小的視窗即不再做浮動視窗
@@ -36,17 +45,18 @@ LER = function(){
 
         var timerID;
         var popup;
-        var isFirst = true;
+        var popupFirstShow = true;
         var isPinned = false;
         if(!defaultTab || defaultTab < 0 || defaultTab >= tabInfos.length) defaultTab = 0;
 
         ele.onmouseover = function(mouseEvent) {
+            if(popup && !popup.style.display) return; ///< 如果正在顯示中，就不用重新定位
             var self = this;
             var x = mouseEvent.pageX;
             var y = mouseEvent.pageY;
             if(timerID) clearTimeout(timerID);
             timerID = setTimeout(function() {
-                if(isFirst) {
+                if(popupFirstShow) {
                     popup = document.createElement("DIV");
                     popup.className = "LER-popup";
                     popup.onmouseout = function(event) {
@@ -69,36 +79,42 @@ LER = function(){
                     var contents = popup.childNodes[1].childNodes[2];
                     for(var i = 0; i < tabInfos.length; ++i) {
                         var li = document.createElement("LI");
-                        li.innerText = tabInfos[i].title;
+                        if(tabInfos[i].link)
+                            li.innerHTML = '<a onclick="return false;" href="' + tabInfos[i].link + '">' + tabInfos[i].title + '</a>';
+                        else li.innerText = tabInfos[i].title;
                         li.onclick = function() {
-                            for(var j = 0; j < tabs.childNodes.length; ++j) {
-                                var t = tabs.childNodes[j];
-                                var c = contents.childNodes[j];
-                                if(t != this) {
-                                    t.style.fontWeight = "";
-                                    t.style.borderBottomColor = "";
-                                    c.style.display = "none";
+                            var tabInfo = tabInfos[i];
+                            var tabFirstShow = true;
+                            return function() {
+                                for(var j = 0; j < tabs.childNodes.length; ++j) {
+                                    var t = tabs.childNodes[j];
+                                    var c = contents.childNodes[j];
+                                    if(t != this) {
+                                        t.style.fontWeight = "";
+                                        t.style.borderBottomColor = "";
+                                        c.style.display = "none";
+                                    }
+                                    else { /// 該顯示的那個
+                                        t.style.fontWeight = "bold";
+                                        t.style.borderBottomColor = "transparent";
+                                        c.style.display = "";
+                                        if(tabFirstShow) {
+                                            c.innerHTML = tabInfo.content;
+                                            if(tabInfo.onFirstShow) tabInfo.onFirstShow(c);
+                                            tabFirstShow = false;
+                                        }
+                                    }
                                 }
-                                else c.style.display = "";
-                            }
-                            this.style.fontWeight = "bold";
-                            this.style.borderBottomColor = "transparent";
-                        };
+                            };
+                        }();
                         tabs.appendChild(li);
 
                         var div = document.createElement("DIV");
-                        div.innerHTML = tabInfos[i].content;
-                        div.style.display = "none";
                         contents.appendChild(div);
-
-                        if(i == defaultTab) {
-                            li.style.fontWeight = "bold";
-                            li.style.borderBottomColor = "transparent";
-                            div.style.display = "";
-                        }
                     }
+                    tabs.childNodes[defaultTab].onclick();
                     document.body.appendChild(popup);
-                    isFirst = false;
+                    popupFirstShow = false;
                 }
                 var s = popup.style;
                 s.top = y + "px";
@@ -123,6 +139,25 @@ LER = function(){
             if(popup) popup.style.display = "none";
         };
     };
+    /** 專用於popup檢查全國法規資料庫「查無資料」情形
+      * cross domain, chrome extension 限定，詳參https://developer.chrome.com/extensions/xhr.html
+      * 執行後將回傳的函數丟給`tabInfos`
+      */
+    var addPopupMojChecker = function(url) {
+        return function(node) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", url, true);
+            xhr.onreadystatechange = function() {
+                if(xhr.readyState != 4) return;
+                node.innerHTML = (xhr.responseText.indexOf("history.go(-1);") < 0)
+                    ? '<iframe src="' + url + '"></iframe>'
+                    : "查無資料"
+                ;
+            };
+            xhr.send();
+        };
+    };
+    
 
     /** 文字轉換的主函數：每個DOM node都跑一次
       * * 無論幾種要轉換的東西，一個 Text 節點即只處理一次
@@ -279,19 +314,26 @@ LER = function(){
             node.setAttribute('title', lastFoundLaw.name);
             node.className = "LER-lawName-container";
             node.innerHTML = '<span class="LER-lawName">' + match[0] + '</span>';
+            var catalog = 'http://law.moj.gov.tw/LawClass/LawAllPara.aspx?PCode=' + lastFoundLaw.PCode;
             addPopup(node, [
                 {
                     title: "法規沿革",
+                    link: 'http://law.moj.gov.tw/LawClass/LawHistory.aspx?PCode=' + lastFoundLaw.PCode,
                     content: '<iframe src="http://law.moj.gov.tw/LawClass/LawHistory.aspx?PCode=' + lastFoundLaw.PCode + '"></iframe>'
+                },
+                {
+                    title: "編章節",
+                    link: catalog,
+                    content: "讀取中",
+                    onFirstShow: addPopupMojChecker(catalog)                    
                 },
                 {
                     title: "外部連結",
                     content: '<ul>'
                         + '<li>全國法規資料庫<ul>'
                             + '<li><a target="_blank" href="http://law.moj.gov.tw/LawClass/LawAll.aspx?PCode=' + lastFoundLaw.PCode + '">所有條文</a></li>'
-                            + '<li><a target="_blank" href="http://law.moj.gov.tw/LawClass/LawAllPara.aspx?PCode=' + lastFoundLaw.PCode + '">編章節架構</a></li>'
                         + '</ul></li>'
-                        + (lastFoundLaw.lyID    ///< 還沒想好該怎麼做...
+                        + (lastFoundLaw.lyID    ///< 還沒想好該怎麼做，且還得轉成大五碼!?
                             ? ''
                             : ''
                         )
@@ -400,6 +442,7 @@ LER = function(){
                         ;
                         tabs.push({
                             title: "相關法條",
+                            link: url,
                             content: '<iframe src="' + url + '"></iframe>'
                         });
                     }
@@ -415,7 +458,9 @@ LER = function(){
                 }
                 tabs.unshift({ ///< 要放最前面
                     title: "條文內容",
-                    content: '<iframe src="' + href + '"></iframe>'
+                    link: href,
+                    content: '讀取中',
+                    onFirstShow: addPopupMojChecker(href)
                 });
             }
 
@@ -480,7 +525,9 @@ LER = function(){
                 });
                 tabs.unshift({
                     title: "條文內容",
-                    content: '<iframe src="' + href + '"></iframe>'
+                    link: href,
+                    content: '讀取中',
+                    onFirstShow: addPopupMojChecker(href)
                 });
             }
             node.innerHTML = (inSpecial != 'A' && href)
@@ -701,7 +748,6 @@ LER = function(){
     rules.push({
         pattern: /百分之([一二三四五六七八九十][一二三四五六七八九十百]*)([‧點]([零０一二三四五六七八九]+))?/g,
         replace: function(match) {
-            debug("percent");
             var node = document.createElement("SPAN");
             node.className = "LER-percent";
             node.setAttribute("title", match[0]);
