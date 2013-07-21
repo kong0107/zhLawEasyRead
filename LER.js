@@ -79,17 +79,17 @@ LER = function(){
                     var contents = popup.childNodes[1].childNodes[2];
                     for(var i = 0; i < tabInfos.length; ++i) {
                         var li = document.createElement("LI");
+                        li.innerHTML = '<span>' + tabInfos[i].title + '</span>';
                         if(tabInfos[i].link)
-                            li.innerHTML = '<a onclick="return false;" href="' + tabInfos[i].link + '">' + tabInfos[i].title + '</a>';
-                        else li.innerText = tabInfos[i].title;
-                        li.onclick = function() {
+                            li.innerHTML += '\n<a title="開新視窗" target="_blank" href="' + tabInfos[i].link + '">+</a>';
+                        li.firstChild.onclick = function() {
                             var tabInfo = tabInfos[i];
                             var tabFirstShow = true;
                             return function() {
                                 for(var j = 0; j < tabs.childNodes.length; ++j) {
                                     var t = tabs.childNodes[j];
                                     var c = contents.childNodes[j];
-                                    if(t != this) {
+                                    if(t.firstChild != this) {
                                         t.style.fontWeight = "";
                                         t.style.borderBottomColor = "";
                                         c.style.display = "none";
@@ -112,7 +112,7 @@ LER = function(){
                         var div = document.createElement("DIV");
                         contents.appendChild(div);
                     }
-                    tabs.childNodes[defaultTab].onclick();
+                    tabs.childNodes[defaultTab].firstChild.onclick();
                     document.body.appendChild(popup);
                     popupFirstShow = false;
                 }
@@ -157,7 +157,7 @@ LER = function(){
             xhr.send();
         };
     };
-    
+
 
     /** 文字轉換的主函數：每個DOM node都跑一次
       * * 無論幾種要轉換的東西，一個 Text 節點即只處理一次
@@ -288,12 +288,23 @@ LER = function(){
             if(typeof lawInfos[name] == "undefined")
                 throw new ReferenceError("law name " + name + " doesn't exist.");
             lawInfos[nick] = lawInfos[name]; ///< 指到同一個物件
+            lawNames.push(nick);
+
+            /// 加上施行法、施行細則
+            if(typeof lawInfos[name + "施行法"] != "undefined") {
+                lawInfos[nick + "施行法"] = lawInfos[name + "施行法"];
+                lawNames.push(nick + "施行法");
+            }
+            if(typeof lawInfos[name + "施行細則"] != "undefined") {
+                lawInfos[nick + "施行細則"] = lawInfos[name + "施行細則"];
+                lawNames.push(nick + "施行細則");
+                lawInfos[nick + "細則"] = lawInfos[name + "施行細則"];
+                lawNames.push(nick + "細則");
+            }
 
             /// 之後也許可以用暱稱來做點什麼...
             //if(!lawInfos[name].nicks) lawInfos[name].nicks = [];
             //lawInfos[name].nicks.push(nick);
-
-            lawNames.push(nick);
         }
         /// 由長至短排列（以避免遇到「刑法施行法」卻比對到「刑法」）
         lawNames.sort(function(a,b){return b.length-a.length});
@@ -325,7 +336,7 @@ LER = function(){
                     title: "編章節",
                     link: catalog,
                     content: "讀取中",
-                    onFirstShow: addPopupMojChecker(catalog)                    
+                    onFirstShow: addPopupMojChecker(catalog)
                 },
                 {
                     title: "外部連結",

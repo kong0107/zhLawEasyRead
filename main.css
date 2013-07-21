@@ -12,7 +12,6 @@
 .LER-date,
 .LER-percent {
     padding: 0 0.15em;
-    background-color: #eee;
     border: 1px solid #ccc;
     font-weight: bold;
 }
@@ -93,6 +92,11 @@
     margin: 0 0.2em 0 0;
     cursor: pointer;
     background-color: #eee;
+    color: #000;
+}
+
+.LER-popup-tabs a {
+    text-decoration: none;
 }
 
 .LER-popup-contents {
