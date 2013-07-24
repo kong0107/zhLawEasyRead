@@ -325,32 +325,35 @@ LER = function(){
             node.setAttribute('title', lastFoundLaw.name);
             node.className = "LER-lawName-container";
             node.innerHTML = '<span class="LER-lawName">' + match[0] + '</span>';
-            var catalog = 'http://law.moj.gov.tw/LawClass/LawAllPara.aspx?PCode=' + lastFoundLaw.PCode;
-            addPopup(node, [
-                {
-                    title: "法規沿革",
-                    link: 'http://law.moj.gov.tw/LawClass/LawHistory.aspx?PCode=' + lastFoundLaw.PCode,
-                    content: '<iframe src="http://law.moj.gov.tw/LawClass/LawHistory.aspx?PCode=' + lastFoundLaw.PCode + '"></iframe>'
-                },
-                {
-                    title: "編章節",
-                    link: catalog,
-                    content: "讀取中",
-                    onFirstShow: addPopupMojChecker(catalog)
-                },
-                {
-                    title: "外部連結",
-                    content: '<ul>'
-                        + '<li>全國法規資料庫<ul>'
-                            + '<li><a target="_blank" href="http://law.moj.gov.tw/LawClass/LawAll.aspx?PCode=' + lastFoundLaw.PCode + '">所有條文</a></li>'
-                        + '</ul></li>'
-                        + (lastFoundLaw.lyID    ///< 還沒想好該怎麼做，且還得轉成大五碼!?
-                            ? ''
-                            : ''
-                        )
-                        + '</ul>'
-                }
-            ]);
+            
+            if(lastFoundLaw.PCode) {
+                var catalog = 'http://law.moj.gov.tw/LawClass/LawAllPara.aspx?PCode=' + lastFoundLaw.PCode;
+                addPopup(node, [
+                    {
+                        title: "法規沿革",
+                        link: 'http://law.moj.gov.tw/LawClass/LawHistory.aspx?PCode=' + lastFoundLaw.PCode,
+                        content: '<iframe src="http://law.moj.gov.tw/LawClass/LawHistory.aspx?PCode=' + lastFoundLaw.PCode + '"></iframe>'
+                    },
+                    {
+                        title: "編章節",
+                        link: catalog,
+                        content: "讀取中",
+                        onFirstShow: addPopupMojChecker(catalog)
+                    },
+                    {
+                        title: "外部連結",
+                        content: '<ul>'
+                            + '<li>全國法規資料庫<ul>'
+                                + '<li><a target="_blank" href="http://law.moj.gov.tw/LawClass/LawAll.aspx?PCode=' + lastFoundLaw.PCode + '">所有條文</a></li>'
+                            + '</ul></li>'
+                            + (lastFoundLaw.lyID    ///< 還沒想好該怎麼做，且還得轉成大五碼!?
+                                ? ''
+                                : ''
+                            )
+                            + '</ul>'
+                    }
+                ]);
+            }
             return node;
         };
 
@@ -768,6 +771,17 @@ LER = function(){
             return node;
         },
         minLength: 4 ///< 最短的是「百分之一」
+    });
+    
+    /** 立法院法律系統的沿革日期的說明欄
+      * 因為難以確認是哪個版本，故暫不加連結
+      * 說明欄有些會被前面的規則先比對到了，因而呈現結果可能不一
+      */
+    rules.push({
+        pattern: /第\d+(之\d+)?([,至]\s*\d+(之\d+)?)*條/g,
+        replace: function(match) {
+            return (match[2] ? "§§" : "§") + match[0].substr(1, match[0].length - 2).replace(/至/g, '~').replace(/之/g, '-');
+        }
     });
 
     return {
