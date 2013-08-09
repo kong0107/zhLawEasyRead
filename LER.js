@@ -43,6 +43,10 @@ LER = function(){
         if(window.innerHeight < 300 || window.innerWidth < 400) return;
         if(!tabInfos.length) return;
 
+        /// 部落格內嵌模式時，尚不允許浮動視窗，因為沒能確認<iframe />會不會有 #16 的問題。
+        if(typeof chrome == "undefined") return; 
+        if(!chrome.runtime && !chrome.extension) return; 
+
         var timerID;
         var popup;
         var popupFirstShow = true;
@@ -583,7 +587,7 @@ LER = function(){
                 }
                 else node = document.createElement("SPAN");
                 node.className = "LER-jyi";
-                node.innerText = "#" + num;
+                node.appendChild(document.createTextNode("#" + num));
                 addPopup(node, [{
                     title: "解釋文",
                     content: '<iframe src="' + href + '"></iframe>'
@@ -696,7 +700,7 @@ LER = function(){
             node.appendChild(document.createTextNode(match[0]));
             return node;
         }
-        return {pattern: pattern, replace: replace, minLength: 4}; ///< 最短的是「最高法院」
+        return {pattern: pattern, replace: replace, minLength: 2}; ///< 最短的是「北院」、「雄檢」
     }());
 
     /** 裁判字號
@@ -748,7 +752,7 @@ LER = function(){
             var node = document.createElement("SPAN");
             node.className = "LER-date";
             node.setAttribute("title", match[0]);
-            node.innerText = parseInt(match[3]) + "." + parseInt(match[4]) + "." + parseInt(match[5]);
+            node.appendChild(document.createTextNode(parseInt(match[3]) + "." + parseInt(match[4]) + "." + parseInt(match[5])));
             return node;
         },
         minLength: 8 ///< 最短的是「民國一年一月一日」
@@ -767,7 +771,7 @@ LER = function(){
             node.setAttribute("title", match[0]);
             var text = parseInt(match[1]);
             if(match[2]) text += "." + parseInt(match[3]);
-            node.innerText = text + "％";
+            node.appendChild(document.createTextNode(text + "％"));
             return node;
         },
         minLength: 4 ///< 最短的是「百分之一」

@@ -2,6 +2,10 @@
 * a client-side JavaScript for popular browsers and an extension for Google Chrome to parse the contents of webpage to view Taiwan's law articles/websites easier.
 * related with [g0v/laweasyread](https://github.com/g0v/laweasyread) but functions differently and not combined together yet.
 
+可將網頁中的法規、條文、大法官解釋、判決字號均加上連結。使用方式有二：
+* Google 瀏覽器外掛，請至[Chrome 線上應用程式商店](https://chrome.google.com/webstore/detail/法規亦毒氣/iedodmlnmhobigohbkalkkjlbmdkjalj)安裝。
+* 網頁內嵌JavaScript，供網站或部落格以內嵌JavaScript（加上 &lt;script src&gt; ）的方式，[示範頁面](http://kong0107.github.io/zhLawEasyRead)。
+
 Google瀏覽器外掛，可於瀏覽網站時：
 * 網頁中提到法規名稱或是條文時：
     * 將法規名稱加上連往[全國法規資料庫](http://law.moj.gov.tw/)看該法規全文的網頁連結，滑鼠移過去時可看其沿革（立法、修法史）。
@@ -22,7 +26,7 @@ Google瀏覽器外掛，可於瀏覽網站時：
 * 立法院法律系統（[範例網頁連結](http://lis.ly.gov.tw/lghtml/lawstat/reason2/01183100110400.htm)）
 ![Legislative Yuan](http://images.plurk.com/kAGZ-5bvO4HGPifAXwkDU9CAs3y.jpg)
 * 全國法規資料庫（[範例網頁連結](http://law.moj.gov.tw/LawClass/LawSearchNo.aspx?PC=B0000001&SNo=1079.4,1079.5)）
-![Laws & Regulations Database](http://images.plurk.com/kAGZ-1V1k4UwBowvUXGaOQ0DF6R.jpg)
+![Laws & Regulations Database](https://fbcdn-sphotos-h-a.akamaihd.net/hphotos-ak-ash4/1014200_10152542008401393_14309567_n.jpg)
 
 # Installation
 按網頁右側偏下方的 "Download ZIP" 下載本專案的打包檔，並解壓縮到任意處。
