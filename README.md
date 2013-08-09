@@ -29,33 +29,26 @@ Google瀏覽器外掛，可於瀏覽網站時：
 ![Laws & Regulations Database](https://fbcdn-sphotos-h-a.akamaihd.net/hphotos-ak-ash4/1014200_10152542008401393_14309567_n.jpg)
 
 # Installation
-按網頁右側偏下方的 "Download ZIP" 下載本專案的打包檔，並解壓縮到任意處。
-
-## Google Chrome Extension
-* 進入Chrome的「擴充功能」設定頁面（網址輸入 chrome://extensions/ ），勾選右上角的「開發人員模式」。
-* 點選剛剛冒出來的「載入未封裝擴充功能」按鈕。
-* 選取剛剛解壓縮出來的資料夾。
-* 網址列右邊出現「§#」圖示的話就是成功了，按該圖示會有一些連結。
-* 解壓縮出來的資料夾與檔案不要刪掉。
-* 試試在[全國法規資料庫](http://law.moj.gov.tw/)中搜尋一些法規，例如[個人資料保護法](http://law.moj.gov.tw/LawClass/LawAll.aspx?PCode=I0050021)
-* 瀏覽動態讀取的網頁（如Facebook、噗浪）時，可能須手動按右上角的「§#」圖示再按「轉換這個網頁」才會作用。
-
 警告：部落客於編輯網誌時，請暫時關閉本外掛。
 
-## Embedded JavaScript for Websites and Blogs
-暫停開發，目前亦僅有Google Chrome稍能運作。
+## Google Chrome Extension
+瀏覽器外掛請至[Chrome 線上應用程式商店](https://chrome.google.com/webstore/detail/法規亦毒氣/iedodmlnmhobigohbkalkkjlbmdkjalj)安裝。
+* 網址列右邊出現「§#」圖示的話就是成功了，按該圖示會有一些連結。
+* 瀏覽動態讀取的網頁（如Facebook、噗浪）時，可能須手動按右上角的「§#」圖示再按「轉換這個網頁」才會作用。
 
+
+## Embedded JavaScript for Websites and Blogs
+（網頁內嵌目前僅知Google Chrome 與 Mozilla Firefox 能運作。）
 在網頁HTML原始碼中的`</head>`前加入
 ```html
-  <script src="pcodes.js"></script>
-  <script src="aliases2.js"></script>
-  <script src="embedded.js"></script>
-```
-路徑請自行修改。
-
-（非必要）針對`.LER_lawName`和`.LER_artNum`編輯自己的CSS規則，或是引用本專案中的`embedded.css`
-```html
-  <link rel="stylesheet" type="text/css" href="embedded.css">
+<link href="http://kong0107.github.io/zhLawEasyRead/stylesheets/main.css" rel="stylesheet" type="text/css" />
+<script src="http://kong0107.github.io/zhLawEasyRead/javascripts/parseInt.js" type="text/javascript"></script>
+<script src="http://kong0107.github.io/zhLawEasyRead/javascripts/pcodes.js" type="text/javascript"></script>
+<script src="http://kong0107.github.io/zhLawEasyRead/javascripts/aliases.js" type="text/javascript"></script>
+<script src="http://kong0107.github.io/zhLawEasyRead/javascripts/lyIDs.js" type="text/javascript"></script>
+<script src="http://kong0107.github.io/zhLawEasyRead/javascripts/courts.js" type="text/javascript"></script>
+<script src="http://kong0107.github.io/zhLawEasyRead/javascripts/LER.js" type="text/javascript"></script>
+<script src="http://kong0107.github.io/zhLawEasyRead/javascripts/embedded2.js" type="text/javascript"></script>
 ```
 
 # Disclaimer
