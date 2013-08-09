@@ -1,240 +1,165 @@
 <!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>法規亦毒氣 by kong0107</title>
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script src="javascripts/respond.js"></script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <!--[if lt IE 8]>
-    <link rel="stylesheet" href="stylesheets/ie.css">
-    <![endif]-->
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<html lang="zh-tw">
+<head>
+	<meta charset="utf-8">
+	<title>法規亦毒氣內嵌功能測試頁</title>
+	<base target="_blank">
+	<link href="stylesheets/styles.css" rel="stylesheet" type="text/css">
 
-  </head>
-  <body>
-      <div id="header">
-        <nav>
-          <li class="fork"><a href="https://github.com/kong0107/zhLawEasyRead">View On GitHub</a></li>
-          <li class="downloads"><a href="https://github.com/kong0107/zhLawEasyRead/zipball/master">ZIP</a></li>
-          <li class="downloads"><a href="https://github.com/kong0107/zhLawEasyRead/tarball/master">TAR</a></li>
-          <li class="title">DOWNLOADS</li>
-        </nav>
-      </div><!-- end header -->
+	<link href="stylesheets/main.css" rel="stylesheet" type="text/css">
 
-    <div class="wrapper">
+	<script src="javascripts/parseInt.js" type="text/javascript"></script>
+	<script src="javascripts/pcodes.js" type="text/javascript"></script>
+	<script src="javascripts/aliases.js" type="text/javascript"></script>
+	<script src="javascripts/lyIDs.js" type="text/javascript"></script>
+	<script src="javascripts/courts.js" type="text/javascript"></script>
 
-      <section>
-        <div id="title">
-          <h1>法規亦毒氣</h1>
-          <p>an extension for Chrome browser to view Taiwan&#39;s law articles/websites easier</p>
-          <hr>
-          <span class="credits left">Project maintained by <a href="https://github.com/kong0107">kong0107</a></span>
-          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
-        </div>
+	<script src="javascripts/LER.js" type="text/javascript"></script>
+	<!--script src="javascripts/embedded2.js" type="text/javascript"></script-->
+</head>
+<body>
+	<div id="title">
+		<h1><a href="http://github.com/kong0107/zhlaweasyread">法規亦毒氣</a>內嵌功能測試頁</h1>
+		<button onclick="LER.parse(document.body); return false;">執行本外掛</button>
+		<button onclick="LER.parse(document.body); return false;" style="position: fixed; bottom: 0; right: 0;">執行本外掛</button>
+		<ul>
+			<li>
+				<a href="http://github.com/kong0107/zhlaweasyread">本專案</a>可將網頁中的法規、條文、大法官解釋、判決字號均加上連結。使用方式有二：
+				<ul>
+					<li>瀏覽器外掛，供瀏覽網路時使用。目前僅有Google Chrome的版本，請至<a href="https://chrome.google.com/webstore/detail/法規亦毒氣/iedodmlnmhobigohbkalkkjlbmdkjalj">Chrome 線上應用程式商店</a>安裝。</li>
+					<li>網頁內嵌JavaScript，供網站或部落格以內嵌JavaScript（加上 &lt;script src&gt; ）的方式。</li>
+				</ul>
+			</li>
+			<li>本頁面即網頁內嵌方式的示範頁面。請用二個分頁開啟本頁面，並保留其一不執行本外掛、另一則<span style="cursor: pointer; text-decoration: underline;" onclick="LER.parse(document.body);">執行</span>，以對照使用前後差異。</li>
+			<li>跨瀏覽器尚有諸多問題， Chrome 和 Firefox 可以運作，但 IE 上應該是還不能運作。（目前完全沒用 Javascript framework ）</li>
+			<li>略去了加上「跳出浮動視窗」的功能（技術問題參閱<a href="https://github.com/kong0107/zhLawEasyRead/issues/16">issue #16</a>）。</li>
+		</ul>
+	</div>
 
-        <h1>
-<a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>Introduction</h1>
+	<h2>使用方式</h2>
+	<p>在網頁原始碼的 &lt;head&gt; 和 &lt;/head&gt; 之間加上：</p>
+	<textarea style="width: 60em; height: 12em;">
+<link href="http://kong0107.github.io/zhLawEasyRead/stylesheets/main.css" rel="stylesheet" type="text/css" />
+<script src="http://kong0107.github.io/zhLawEasyRead/javascripts/parseInt.js" type="text/javascript"></script>
+<script src="http://kong0107.github.io/zhLawEasyRead/javascripts/pcodes.js" type="text/javascript"></script>
+<script src="http://kong0107.github.io/zhLawEasyRead/javascripts/aliases.js" type="text/javascript"></script>
+<script src="http://kong0107.github.io/zhLawEasyRead/javascripts/lyIDs.js" type="text/javascript"></script>
+<script src="http://kong0107.github.io/zhLawEasyRead/javascripts/courts.js" type="text/javascript"></script>
+<script src="http://kong0107.github.io/zhLawEasyRead/javascripts/LER.js" type="text/javascript"></script>
+<script src="http://kong0107.github.io/zhLawEasyRead/javascripts/embedded2.js" type="text/javascript"></script>
+	</textarea>
 
-<ul>
-<li>a client-side JavaScript for popular browsers and an extension for Google Chrome to parse the contents of webpage to view Taiwan's law articles/websites easier.</li>
-<li>related with <a href="https://github.com/g0v/laweasyread">g0v/laweasyread</a> but functions differently and not combined together yet.</li>
-</ul><p>Google瀏覽器外掛，可於瀏覽網站時：</p>
+	<h2>示範</h2>
+	<ul>
+		<li>司法院釋字第六六六號解釋促成2011年十一月四日的社維法第80條修正，但依照兒童及少年性交易防制條例第2條，現在拍全裸寫真也是性交易。（另參<a href="http://lis.ly.gov.tw/lghtml/lawstat/reason2/01183100110400.htm">前者立法理由</a>四）</li>
+		<li>公投法第三十條至第三十三條根本沒有說「否決」就是「不可以做」，換言之無論核四公投題目為何，只要沒有通過，就一概是「蓋不蓋都可以」－－儘管最高行政法院101年判字514號判決嘗試法官造法以解決此困境。</li>
+		<li>
+			台灣高等法院八十九年度家抗字第一五六號民事裁定理由二（相關條文現已不同）：
+			<blockquote>按婚約為男女當事人約定將來應互相結婚之契約，非由男女當事人自行訂定，不生效力；次按公證法施行細則第四十三條第一項亦規定：「舉行公証結婚典禮時，請求公証結婚之男女當事人及証人，應攜帶身分證明文件親自到場，並在公證結婚證書上簽名」；再參以民法第九百八十條、第九百七十二條及第九百七十三條規定，均係以男女為規範對象，顯見我國現行民法親屬篇婚姻章所規定之結婚應以一男一女為限。茲抗告人請求與林建中兩男間之公証結婚，自屬違反法令之事項，依公證法第七十條規定，自不得作成公證書，原法院公証處所為拒絕抗告人請求公証結婚之處分，自無不當，從而原法院據以裁定駁回抗告人所為之異議，核無違誤。抗告論旨仍執前詞指摘原裁定不當，求予廢棄，為無理由。</blockquote>
+		</li>
+	</ul>	
 
-<ul>
-<li>網頁中提到法規名稱或是條文時：
+	<hr />
+	
+	<h2>法規名稱</h2>
+	<p>原則上就是用一個超長的RegExp。</p>
+	<h3>全國法規資料庫有收錄的</h3>
+	<p>自動加上連向全國法規資料庫的該法規全文頁面；全國法規資料庫的法規列表參閱 pcodes.js </p>
+	<ul>
+		<li>民法</li>
+		<li>公文程式條例</li>
+		<li>中華民國紅十字會法</li>
+		<li>千禧年資訊年序爭議處理法</li>
+		<li>嚴重急性呼吸道症候群防治及紓困暫行條例</li>
+		<li>中央銀行及中央存款保險股份有限公司現職金融檢查人員轉任行政院金融監督管理委員會及所屬機關比照改任官職等級及退撫事項辦法（共計59字）</li>
+	</ul>
+	<h3>全國法規資料庫沒有收錄、但立法院法律系統仍有收錄的</h3>
+	<p>通常是廢止、停止適用或是年久失修。仍會偵測到，但是不會加上連結（因為立法院法律系統的永久連結格式比較複雜）；立法院法律系統的法律清單參閱 lyIDs.js</p>
+	<ul>
+		<li>中學法</li>
+		<li>最低工資法</li>
+	</ul>
+	<h3>法規簡稱</h3>
+	<p>法規簡稱仍可偵測（列表即 aliases.js 需要手動維護）。滑鼠移到簡稱上時，會浮現該法規的全名。（用 &lt;a title &gt; 實作）</p>
+	<ul>
+		<li>通監法</li>
+		<li>家暴法</li>
+		<li>道交條例</li>
+		<li>兩岸條例</li>
+	</ul>
+	<h3>法規誤稱</h3>
+	<p>諸多法規有常見誤稱（或是異體字的問題），目前還不支援，不過應該可以仿簡稱的方式處理。以下將正確的與錯誤的並列，請<span style="cursor: pointer; text-decoration: underline;" onclick="LER.parse(document.body);">執行本外掛</span>以看解答。<p>
+	<ul>
+		<li>性別平等教育法</li>
+		<li>性別平等工作法</li>
+		<li>性別教育平等法</li>
+		<li>性別工作平等法</li>
+		<li>水汙染防制法</li>
+		<li>水汙染防治法</li>
+		<li>水污染防制法</li>
+		<li>水污染防治法</li>
+		<li>空氣汙染防制法</li>
+		<li>空氣汙染防治法</li>
+		<li>空氣污染防制法</li>
+		<li>空氣污染防治法</li>
+	</ul>
 
-<ul>
-<li>將法規名稱加上連往<a href="http://law.moj.gov.tw/">全國法規資料庫</a>看該法規全文的網頁連結，滑鼠移過去時可看其沿革（立法、修法史）。</li>
-<li>將單一法條連向<a href="http://lis.ly.gov.tw/lgcgi/lglaw">立法院法律系統</a>該條文與相關條文，滑鼠移過去時可看條文內容。</li>
-<li>將多個法條連向<a href="http://law.moj.gov.tw/">全國法規資料庫</a>看該些條文，滑鼠移過去時可看條文內容。</li>
-</ul>
-</li>
-<li>亦能運作於<a href="http://ly.g0v.tw.jit.su/">零時政府立法院</a>、<a href="http://www.pingluweb.com/">評律網</a>等以AJAX機制更新的內容（需點選網址列的按鈕）。</li>
-<li>提到大法官解釋時，即連向該號解釋的官方網頁。</li>
-<li>將下列網站稍做排版，使易於閱讀：
-
-<ul>
-<li><a href="http://www.judicial.gov.tw/constitutionalcourt/p03.asp">大法官解釋</a></li>
-<li><a href="http://lis.ly.gov.tw/lgcgi/lglaw">立法院法律系統</a></li>
-<li><a href="http://jirs.judicial.gov.tw/FJUD/">司法院裁判書查詢</a></li>
-</ul>
-</li>
-</ul><p>警告：部落客於編輯網誌時，請暫時關閉本外掛。</p>
-
-<h2>
-<a name="examples" class="anchor" href="#examples"><span class="octicon octicon-link"></span></a>Examples</h2>
-
-<ul>
-<li>大法官解釋（<a href="http://www.judicial.gov.tw/constitutionalcourt/p03_01.asp?expno=617">範例網頁連結</a>）
-<img src="http://images.plurk.com/kAGZ-22KieXBnFHCtsKe8DBiD8u.jpg" alt="Judicial Interpretation">
-</li>
-<li>立法院法律系統（<a href="http://lis.ly.gov.tw/lghtml/lawstat/reason2/01183100110400.htm">範例網頁連結</a>）
-<img src="http://images.plurk.com/kAGZ-5bvO4HGPifAXwkDU9CAs3y.jpg" alt="Legislative Yuan">
-</li>
-<li>全國法規資料庫（<a href="http://law.moj.gov.tw/LawClass/LawSearchNo.aspx?PC=B0000001&amp;SNo=1079.4,1079.5">範例網頁連結</a>）
-<img src="http://images.plurk.com/kAGZ-1V1k4UwBowvUXGaOQ0DF6R.jpg" alt="Laws &amp; Regulations Database">
-</li>
-</ul><h1>
-<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h1>
-
-<p>按網頁右側偏下方的 "Download ZIP" 下載本專案的打包檔，並解壓縮到任意處。</p>
-
-<h2>
-<a name="google-chrome-extension" class="anchor" href="#google-chrome-extension"><span class="octicon octicon-link"></span></a>Google Chrome Extension</h2>
-
-<ul>
-<li>進入Chrome的「擴充功能」設定頁面（網址輸入 chrome://extensions/ ），勾選右上角的「開發人員模式」。</li>
-<li>點選剛剛冒出來的「載入未封裝擴充功能」按鈕。</li>
-<li>選取剛剛解壓縮出來的資料夾。</li>
-<li>網址列右邊出現「§#」圖示的話就是成功了，按該圖示會有一些連結。</li>
-<li>解壓縮出來的資料夾與檔案不要刪掉。</li>
-<li>試試在<a href="http://law.moj.gov.tw/">全國法規資料庫</a>中搜尋一些法規，例如<a href="http://law.moj.gov.tw/LawClass/LawAll.aspx?PCode=I0050021">個人資料保護法</a>
-</li>
-<li>瀏覽動態讀取的網頁（如Facebook、噗浪）時，可能須手動按右上角的「§#」圖示再按「轉換這個網頁」才會作用。</li>
-</ul><p>警告：部落客於編輯網誌時，請暫時關閉本外掛。</p>
-
-<h2>
-<a name="embedded-javascript-for-websites-and-blogs" class="anchor" href="#embedded-javascript-for-websites-and-blogs"><span class="octicon octicon-link"></span></a>Embedded JavaScript for Websites and Blogs</h2>
-
-<p>暫停開發，目前亦僅有Google Chrome稍能運作。</p>
-
-<p>在網頁HTML原始碼中的<code>&lt;/head&gt;</code>前加入</p>
-
-<div class="highlight"><pre>  <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"pcodes.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
-  <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"aliases2.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
-  <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"embedded.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
-</pre></div>
-
-<p>路徑請自行修改。</p>
-
-<p>（非必要）針對<code>.LER_lawName</code>和<code>.LER_artNum</code>編輯自己的CSS規則，或是引用本專案中的<code>embedded.css</code></p>
-
-<div class="highlight"><pre>  <span class="nt">&lt;link</span> <span class="na">rel=</span><span class="s">"stylesheet"</span> <span class="na">type=</span><span class="s">"text/css"</span> <span class="na">href=</span><span class="s">"embedded.css"</span><span class="nt">&gt;</span>
-</pre></div>
-
-<h1>
-<a name="disclaimer" class="anchor" href="#disclaimer"><span class="octicon octicon-link"></span></a>Disclaimer</h1>
-
-<p>甚麼都不負責。</p>
-
-<h1>
-<a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h1>
-
-<p><a href="http://en.wikipedia.org/wiki/MIT_License">MIT License</a>再加上一條：
-被授權人於出版發行、散布、再授權及販售軟體及軟體的副本時，應於MIT授權條款上方或下方加上此規則，並：</p>
-
-<ul>
-<li>陳述被授權人對於一個以上之公共議題之立場；或</li>
-<li>附上與其立場類似之文章之永久連結。</li>
-</ul><p>此軟體此版本設定之公共議題為「性別」，立場為「性解放」，支持十歲以上智識者均得自主與人發生性行為與性交易，「性忠貞」並不是「道德」的一部份。參閱<a href="http://phiphicake.blogspot.tw/2013/06/blog-post_4.html">反守貞地圖．哲學哲學雞蛋糕</a></p>
-
-<h2>
-<a name="license-explanation" class="anchor" href="#license-explanation"><span class="octicon octicon-link"></span></a>License Explanation</h2>
-
-<ul>
-<li>於其軟體再版時，得變更議題與立場、連結。</li>
-<li>軟體之使用與修改者，無須同意原軟體授權條款中基於本規則而對特定議題表態之立場。</li>
-</ul><h1>
-<a name="notices" class="anchor" href="#notices"><span class="octicon octicon-link"></span></a>Notices</h1>
-
-<ul>
-<li>全國法規資料庫有收錄的均會加上連結－－除非原本已經是連結。</li>
-<li>動態讀取的網頁－－如Facebook和<a href="http://ly.g0v.tw.jit.su/">零時政府立法院</a>、<a href="http://www.pingluweb.com/">評律網</a>）－－不會自動轉換，但是可以手動按下左下角的黑底文字再次分析內文。</li>
-<li>如為可編輯之純文字框，如 TEXTAREA ，即不會處理。列表見<code>LER.js</code>的<code>skippingTags</code>。</li>
-<li>「網站內嵌JavaScript」部分暫停開發，有興趣者請參考 <code>embedded.*</code>。</li>
-<li>在內嵌其他網域的框架時（如Facebook的留言或按讚外掛），會有瀏覽器警告。</li>
-<li>Google說「需支付一次性的開發人員註冊費 US$5.00」，所以（還）沒有放在「Chrome 線上應用程式商店」。</li>
-</ul><h1>
-<a name="bugs" class="anchor" href="#bugs"><span class="octicon octicon-link"></span></a>Bugs</h1>
-
-<ul>
-<li>可能與WYSIWYG編輯器的相互干擾!!!!</li>
-<li>會發生「漩渦鳴人的 §8 尾巴出現了」和「我國的 §3 國道走山事件」</li>
-<li>未能妥善處理以換行字元或BR標籤來排版的網頁（如<a href="http://law.moj.gov.tw/">全國法規資料庫</a>及<a href="http://jirs.judicial.gov.tw/FJUD/">司法院裁判書查詢</a>）。</li>
-</ul><h1>
-<a name="development" class="anchor" href="#development"><span class="octicon octicon-link"></span></a>Development</h1>
-
-<h2>
-<a name="javascript-prototype" class="anchor" href="#javascript-prototype"><span class="octicon octicon-link"></span></a>Javascript Prototype</h2>
-
-<p>只要引入 <code>jsExt.js</code> ，就可以一行
-<code>document.body.replaceChildren(/第\s*(\d+)\s*條/, "§$1");</code>
-就把所有的條號都轉換掉。</p>
-
-<ul>
-<li>會把呼叫者的子節點（預設並含所有後代節點）中的 <code>ELEMENT_NODE</code> 中的 <code>TEXT_NODE</code> 都跑過
-
-<ul>
-<li>雖然 <code>BUTTON</code>, <code>TEXTAREA</code>, <code>PRE</code> 和 <code>SCRIPT</code> 都是這幾個在本專案中應該都不需要處理，但為了維持該函數的通用性， <code>Text.prototype.replace</code> 和 <code>Element.prototype.replaceChildren</code> 並不主動排除該些節點。若有需要，未來可以考慮多加參數處理「要處理／排除的標籤」，並為該參數設定預設值。</li>
-</ul>
-</li>
-<li>
-<code>Element.prototype.replaceChild</code> 亦被改寫。第一個引數不再必須是節點，亦可以是節點陣列。</li>
-<li>
-<code>jsExt.js</code> 亦改寫 <code>parseInt</code> ，可將中文數字字串轉為整數。</li>
-</ul><p>目前專案並無使用<code>jsExt.js</code>，不過若有上述需求者仍可參考。</p>
-
-<h2>
-<a name="first-idea" class="anchor" href="#first-idea"><span class="octicon octicon-link"></span></a>First Idea</h2>
-
-<p>原本是以字串取代的方式去改變document.body.innerHTML（之前的0.1.8版即是如此），但發現有三個難處：</p>
-
-<ul>
-<li>有（類似）onLoad function的網頁（如「全國法規資料庫」的首頁）即會無後續動作。</li>
-<li>不知道要怎麼樣避開HTML tag的屬性中的字串，特別是要提防屬性字串中又包含特殊字元的情形。</li>
-<li>不知道怎麼偵測「是否已在<a></a>中」，困境同上。</li>
-</ul><h2>
-<a name="current-scheme" class="anchor" href="#current-scheme"><span class="octicon octicon-link"></span></a>Current Scheme</h2>
-
-<p>用遞迴方式跑過整個HTML的DOM tree，抓出textNode來處理。
-因此，勢必得用document.createElement和appendChild等DOM方法，而不能修改innerHTML。</p>
-
-<h2>
-<a name="algorithm" class="anchor" href="#algorithm"><span class="octicon octicon-link"></span></a>Algorithm</h2>
-
-<p>參閱<code>LER.js</code>，把每個「只含文字的節點」（<code>TEXT_NODE</code>)代換成一串新的節點。</p>
-
-<ul>
-<li>
-<code>parseElement()</code>嘗試處理<code>document.body</code>的每一個child。
-
-<ul>
-<li>把非純文字的child再丟給<code>parseElement()</code>去recursion；</li>
-<li>把純文字的child代換為丟去<code>parseText()</code>而得的node array </li>
-</ul>
-</li>
-<li>
-<code>parseText()</code>
-
-<ul>
-<li>用規則一的正規表示式把字串分段，把不匹配的部份再丟給規則二</li>
-<li>規則二的正規表示式不匹配的部份，再丟給規則三</li>
-<li>依此類推，直到沒有規則可再套用</li>
-<li>所有規則均跑完後，即回傳陣列，回到<code>parseElement()</code>把原本的文字節點替換成新的節點列。</li>
-</ul>
-</li>
-<li>將 <code>parseInt()</code> 改寫為支援中文數字，參閱<code>parseInt.js</code>
-</li>
-<li>關於「多個條號」的處理，參閱<code>LER.js</code>中註解文字「條號比對－－支援多條文」以下</li>
-</ul><h2>
-<a name="links-to-regulations" class="anchor" href="#links-to-regulations"><span class="octicon octicon-link"></span></a>Links to regulations</h2>
-
-<p>將<a href="http://law.moj.gov.tw/">全國法規資料庫</a>中有收錄的（包含「已廢止法規」）均加上連結。其方法為：</p>
-
-<ul>
-<li>將<a href="https://github.com/g0v/laweasyread-data">g0v/laweasyread-data</a>的<code>data/pcode.json</code>改為本專案的<code>pcode.js</code>（就只是灌進一個變數中）</li>
-<li>將名稱中只有中文、沒有標點符號的法規（約九千個）全部以'|'為連接符號，由長至短串成一個字串（共近20萬字），生成一個巨大的正規表示式。</li>
-</ul>
-      </section>
-
-    </div>
-    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
-    
-  </body>
+	<h2>法條</h2>
+	<p>針測文字並加上連結。原則上會認為「前一次比對到的法規」的那個條文。</p>
+	<p>技術部分：中文數字轉為阿拉伯數字（或整數物件）的函數請參閱 parseInt.js 。</p>
+	<ul>
+		<li>刑法第239條和刑事訴訟法第239條是相應的。</li>
+		<li>中二高其實是第三條國道。（會連結到刑訴法第三條）</li>
+		<li>（亦支援連續的多個條文）民法第一千零七十九條之四：<blockquote>收養子女，違反第一千零七十三條、第一千零七十三條之一、第一千零七十五條、第一千零七十六條之一、第一千零七十六條之二第一項或第一千零七十九條第一項之規定者，無效。</blockquote></li>
+	</ul>
+	
+	<h2>大法官解釋</h2>
+	<p>會改變原文（因為通常都太多字），滑鼠移上去後可看到原本的文字（以 &lt;a title &gt; 實作），支援一次提到多個大法官解釋</p>
+	<ul>
+		<li>司法院釋字第四百零九號、第六百一十七號解釋</li>
+		<li>司法院釋字第四百零九號、第六百一十七號</li>
+		<li>釋字第四百零九號、第六百一十七號</li>
+		<li>釋字第四零九號、第六一七號</li>
+		<li>釋字六一七號</li>
+		<li>釋字617號</li>
+	</ul>
+	
+	<h2>法院和檢察署</h2>
+	<p>為了直接連向裁判書而作的，不改變文字，滑鼠移上時會顯示該機關的全名。未支援軍審體系。</p>
+	<ul>
+		<li>臺灣臺北地方法院</li>
+		<li>台灣台北地方法院</li>
+		<li>台北地院</li>
+		<li>北院、板檢、台南高分檢</li>
+		<li>大雄檢查了抽屜（哭哭）</li>
+	</ul>
+	
+	<h2>裁判書</h2>
+	<p>提及裁判書的格式眾多，技術困難請參閱 <a href="https://github.com/kong0107/zhLawEasyRead/issues/26">issue #26</a> 或 <a href="http://data.g0v.tw/questions/9/">data.g0v.tw</a> 。另現在司法院其實不支援判決的永久連結（一度可以），故現在連過去還是要手動送出表單才能看到判決書。</p>
+	<ul>
+		<li>台北高等行政法院101年訴字587號判決（行政法院的話，不用指定案件類型）</li>
+		<li>台中地院101年國字第34號民事判決（普通法院）</li>
+	</ul>
+	
+	<h2>百分比、日期</h2>
+	<p>條文裡提到日期或百分比時，都是使用中文字，因而難以閱讀。</p>
+	<ul>
+		<li>
+			中華民國刑法施行法第一條之一第二項：
+			<blockquote>九十四年一月七日刑法修正時，刑法分則編未修正之條文定有罰金者，自九十四年一月七日刑法修正施行後，就其所定數額提高為三十倍。但七十二年六月二十六日至九十四年一月七日新增或修正之條文，就其所定數額提高為三倍。</blockquote>
+		</li>
+		<li>
+			所得稅法第六十六條之六第二項：
+			<blockquote>
+				營利事業依前項規定計算之稅額扣抵比率，超過稅額扣抵比率上限者，以稅額扣抵比率上限為準，計算股東或社員可扣抵之稅額。稅額扣抵比率上限如下：
+				<ol style="list-style-image: none; list-style-type: none;">
+					<li>一、累積未分配盈餘未加徵百分之十營利事業所得稅者：營利事業分配屬九十八年度以前之盈餘，為百分之三三‧三三；分配屬九十九年度以後之盈餘，為百分之二十‧四八。</li>
+					<li>二、累積未分配盈餘已加徵百分之十營利事業所得稅者：營利事業分配屬九十八年度以前之盈餘，為百分之四八‧一五；分配屬九十九年度以後之盈餘，為百分之三三‧八七。</li>
+					<li>三、累積未分配盈餘部分屬九十八年度以前盈餘、部分屬九十九年度以後盈餘、部分加徵、部分未加徵百分之十營利事業所得稅者，為各依其占累積未分配盈餘之比例，按前二款規定上限計算之合計數。</li>
+				</ol>
+			</blockquote>
+		</li>
+	</ul>
+	
+</body>
 </html>
