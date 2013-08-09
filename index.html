@@ -1,0 +1,240 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>法規亦毒氣 by kong0107</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="stylesheets/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="https://github.com/kong0107/zhLawEasyRead">View On GitHub</a></li>
+          <li class="downloads"><a href="https://github.com/kong0107/zhLawEasyRead/zipball/master">ZIP</a></li>
+          <li class="downloads"><a href="https://github.com/kong0107/zhLawEasyRead/tarball/master">TAR</a></li>
+          <li class="title">DOWNLOADS</li>
+        </nav>
+      </div><!-- end header -->
+
+    <div class="wrapper">
+
+      <section>
+        <div id="title">
+          <h1>法規亦毒氣</h1>
+          <p>an extension for Chrome browser to view Taiwan&#39;s law articles/websites easier</p>
+          <hr>
+          <span class="credits left">Project maintained by <a href="https://github.com/kong0107">kong0107</a></span>
+          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
+        </div>
+
+        <h1>
+<a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>Introduction</h1>
+
+<ul>
+<li>a client-side JavaScript for popular browsers and an extension for Google Chrome to parse the contents of webpage to view Taiwan's law articles/websites easier.</li>
+<li>related with <a href="https://github.com/g0v/laweasyread">g0v/laweasyread</a> but functions differently and not combined together yet.</li>
+</ul><p>Google瀏覽器外掛，可於瀏覽網站時：</p>
+
+<ul>
+<li>網頁中提到法規名稱或是條文時：
+
+<ul>
+<li>將法規名稱加上連往<a href="http://law.moj.gov.tw/">全國法規資料庫</a>看該法規全文的網頁連結，滑鼠移過去時可看其沿革（立法、修法史）。</li>
+<li>將單一法條連向<a href="http://lis.ly.gov.tw/lgcgi/lglaw">立法院法律系統</a>該條文與相關條文，滑鼠移過去時可看條文內容。</li>
+<li>將多個法條連向<a href="http://law.moj.gov.tw/">全國法規資料庫</a>看該些條文，滑鼠移過去時可看條文內容。</li>
+</ul>
+</li>
+<li>亦能運作於<a href="http://ly.g0v.tw.jit.su/">零時政府立法院</a>、<a href="http://www.pingluweb.com/">評律網</a>等以AJAX機制更新的內容（需點選網址列的按鈕）。</li>
+<li>提到大法官解釋時，即連向該號解釋的官方網頁。</li>
+<li>將下列網站稍做排版，使易於閱讀：
+
+<ul>
+<li><a href="http://www.judicial.gov.tw/constitutionalcourt/p03.asp">大法官解釋</a></li>
+<li><a href="http://lis.ly.gov.tw/lgcgi/lglaw">立法院法律系統</a></li>
+<li><a href="http://jirs.judicial.gov.tw/FJUD/">司法院裁判書查詢</a></li>
+</ul>
+</li>
+</ul><p>警告：部落客於編輯網誌時，請暫時關閉本外掛。</p>
+
+<h2>
+<a name="examples" class="anchor" href="#examples"><span class="octicon octicon-link"></span></a>Examples</h2>
+
+<ul>
+<li>大法官解釋（<a href="http://www.judicial.gov.tw/constitutionalcourt/p03_01.asp?expno=617">範例網頁連結</a>）
+<img src="http://images.plurk.com/kAGZ-22KieXBnFHCtsKe8DBiD8u.jpg" alt="Judicial Interpretation">
+</li>
+<li>立法院法律系統（<a href="http://lis.ly.gov.tw/lghtml/lawstat/reason2/01183100110400.htm">範例網頁連結</a>）
+<img src="http://images.plurk.com/kAGZ-5bvO4HGPifAXwkDU9CAs3y.jpg" alt="Legislative Yuan">
+</li>
+<li>全國法規資料庫（<a href="http://law.moj.gov.tw/LawClass/LawSearchNo.aspx?PC=B0000001&amp;SNo=1079.4,1079.5">範例網頁連結</a>）
+<img src="http://images.plurk.com/kAGZ-1V1k4UwBowvUXGaOQ0DF6R.jpg" alt="Laws &amp; Regulations Database">
+</li>
+</ul><h1>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h1>
+
+<p>按網頁右側偏下方的 "Download ZIP" 下載本專案的打包檔，並解壓縮到任意處。</p>
+
+<h2>
+<a name="google-chrome-extension" class="anchor" href="#google-chrome-extension"><span class="octicon octicon-link"></span></a>Google Chrome Extension</h2>
+
+<ul>
+<li>進入Chrome的「擴充功能」設定頁面（網址輸入 chrome://extensions/ ），勾選右上角的「開發人員模式」。</li>
+<li>點選剛剛冒出來的「載入未封裝擴充功能」按鈕。</li>
+<li>選取剛剛解壓縮出來的資料夾。</li>
+<li>網址列右邊出現「§#」圖示的話就是成功了，按該圖示會有一些連結。</li>
+<li>解壓縮出來的資料夾與檔案不要刪掉。</li>
+<li>試試在<a href="http://law.moj.gov.tw/">全國法規資料庫</a>中搜尋一些法規，例如<a href="http://law.moj.gov.tw/LawClass/LawAll.aspx?PCode=I0050021">個人資料保護法</a>
+</li>
+<li>瀏覽動態讀取的網頁（如Facebook、噗浪）時，可能須手動按右上角的「§#」圖示再按「轉換這個網頁」才會作用。</li>
+</ul><p>警告：部落客於編輯網誌時，請暫時關閉本外掛。</p>
+
+<h2>
+<a name="embedded-javascript-for-websites-and-blogs" class="anchor" href="#embedded-javascript-for-websites-and-blogs"><span class="octicon octicon-link"></span></a>Embedded JavaScript for Websites and Blogs</h2>
+
+<p>暫停開發，目前亦僅有Google Chrome稍能運作。</p>
+
+<p>在網頁HTML原始碼中的<code>&lt;/head&gt;</code>前加入</p>
+
+<div class="highlight"><pre>  <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"pcodes.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+  <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"aliases2.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+  <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"embedded.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+</pre></div>
+
+<p>路徑請自行修改。</p>
+
+<p>（非必要）針對<code>.LER_lawName</code>和<code>.LER_artNum</code>編輯自己的CSS規則，或是引用本專案中的<code>embedded.css</code></p>
+
+<div class="highlight"><pre>  <span class="nt">&lt;link</span> <span class="na">rel=</span><span class="s">"stylesheet"</span> <span class="na">type=</span><span class="s">"text/css"</span> <span class="na">href=</span><span class="s">"embedded.css"</span><span class="nt">&gt;</span>
+</pre></div>
+
+<h1>
+<a name="disclaimer" class="anchor" href="#disclaimer"><span class="octicon octicon-link"></span></a>Disclaimer</h1>
+
+<p>甚麼都不負責。</p>
+
+<h1>
+<a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h1>
+
+<p><a href="http://en.wikipedia.org/wiki/MIT_License">MIT License</a>再加上一條：
+被授權人於出版發行、散布、再授權及販售軟體及軟體的副本時，應於MIT授權條款上方或下方加上此規則，並：</p>
+
+<ul>
+<li>陳述被授權人對於一個以上之公共議題之立場；或</li>
+<li>附上與其立場類似之文章之永久連結。</li>
+</ul><p>此軟體此版本設定之公共議題為「性別」，立場為「性解放」，支持十歲以上智識者均得自主與人發生性行為與性交易，「性忠貞」並不是「道德」的一部份。參閱<a href="http://phiphicake.blogspot.tw/2013/06/blog-post_4.html">反守貞地圖．哲學哲學雞蛋糕</a></p>
+
+<h2>
+<a name="license-explanation" class="anchor" href="#license-explanation"><span class="octicon octicon-link"></span></a>License Explanation</h2>
+
+<ul>
+<li>於其軟體再版時，得變更議題與立場、連結。</li>
+<li>軟體之使用與修改者，無須同意原軟體授權條款中基於本規則而對特定議題表態之立場。</li>
+</ul><h1>
+<a name="notices" class="anchor" href="#notices"><span class="octicon octicon-link"></span></a>Notices</h1>
+
+<ul>
+<li>全國法規資料庫有收錄的均會加上連結－－除非原本已經是連結。</li>
+<li>動態讀取的網頁－－如Facebook和<a href="http://ly.g0v.tw.jit.su/">零時政府立法院</a>、<a href="http://www.pingluweb.com/">評律網</a>）－－不會自動轉換，但是可以手動按下左下角的黑底文字再次分析內文。</li>
+<li>如為可編輯之純文字框，如 TEXTAREA ，即不會處理。列表見<code>LER.js</code>的<code>skippingTags</code>。</li>
+<li>「網站內嵌JavaScript」部分暫停開發，有興趣者請參考 <code>embedded.*</code>。</li>
+<li>在內嵌其他網域的框架時（如Facebook的留言或按讚外掛），會有瀏覽器警告。</li>
+<li>Google說「需支付一次性的開發人員註冊費 US$5.00」，所以（還）沒有放在「Chrome 線上應用程式商店」。</li>
+</ul><h1>
+<a name="bugs" class="anchor" href="#bugs"><span class="octicon octicon-link"></span></a>Bugs</h1>
+
+<ul>
+<li>可能與WYSIWYG編輯器的相互干擾!!!!</li>
+<li>會發生「漩渦鳴人的 §8 尾巴出現了」和「我國的 §3 國道走山事件」</li>
+<li>未能妥善處理以換行字元或BR標籤來排版的網頁（如<a href="http://law.moj.gov.tw/">全國法規資料庫</a>及<a href="http://jirs.judicial.gov.tw/FJUD/">司法院裁判書查詢</a>）。</li>
+</ul><h1>
+<a name="development" class="anchor" href="#development"><span class="octicon octicon-link"></span></a>Development</h1>
+
+<h2>
+<a name="javascript-prototype" class="anchor" href="#javascript-prototype"><span class="octicon octicon-link"></span></a>Javascript Prototype</h2>
+
+<p>只要引入 <code>jsExt.js</code> ，就可以一行
+<code>document.body.replaceChildren(/第\s*(\d+)\s*條/, "§$1");</code>
+就把所有的條號都轉換掉。</p>
+
+<ul>
+<li>會把呼叫者的子節點（預設並含所有後代節點）中的 <code>ELEMENT_NODE</code> 中的 <code>TEXT_NODE</code> 都跑過
+
+<ul>
+<li>雖然 <code>BUTTON</code>, <code>TEXTAREA</code>, <code>PRE</code> 和 <code>SCRIPT</code> 都是這幾個在本專案中應該都不需要處理，但為了維持該函數的通用性， <code>Text.prototype.replace</code> 和 <code>Element.prototype.replaceChildren</code> 並不主動排除該些節點。若有需要，未來可以考慮多加參數處理「要處理／排除的標籤」，並為該參數設定預設值。</li>
+</ul>
+</li>
+<li>
+<code>Element.prototype.replaceChild</code> 亦被改寫。第一個引數不再必須是節點，亦可以是節點陣列。</li>
+<li>
+<code>jsExt.js</code> 亦改寫 <code>parseInt</code> ，可將中文數字字串轉為整數。</li>
+</ul><p>目前專案並無使用<code>jsExt.js</code>，不過若有上述需求者仍可參考。</p>
+
+<h2>
+<a name="first-idea" class="anchor" href="#first-idea"><span class="octicon octicon-link"></span></a>First Idea</h2>
+
+<p>原本是以字串取代的方式去改變document.body.innerHTML（之前的0.1.8版即是如此），但發現有三個難處：</p>
+
+<ul>
+<li>有（類似）onLoad function的網頁（如「全國法規資料庫」的首頁）即會無後續動作。</li>
+<li>不知道要怎麼樣避開HTML tag的屬性中的字串，特別是要提防屬性字串中又包含特殊字元的情形。</li>
+<li>不知道怎麼偵測「是否已在<a></a>中」，困境同上。</li>
+</ul><h2>
+<a name="current-scheme" class="anchor" href="#current-scheme"><span class="octicon octicon-link"></span></a>Current Scheme</h2>
+
+<p>用遞迴方式跑過整個HTML的DOM tree，抓出textNode來處理。
+因此，勢必得用document.createElement和appendChild等DOM方法，而不能修改innerHTML。</p>
+
+<h2>
+<a name="algorithm" class="anchor" href="#algorithm"><span class="octicon octicon-link"></span></a>Algorithm</h2>
+
+<p>參閱<code>LER.js</code>，把每個「只含文字的節點」（<code>TEXT_NODE</code>)代換成一串新的節點。</p>
+
+<ul>
+<li>
+<code>parseElement()</code>嘗試處理<code>document.body</code>的每一個child。
+
+<ul>
+<li>把非純文字的child再丟給<code>parseElement()</code>去recursion；</li>
+<li>把純文字的child代換為丟去<code>parseText()</code>而得的node array </li>
+</ul>
+</li>
+<li>
+<code>parseText()</code>
+
+<ul>
+<li>用規則一的正規表示式把字串分段，把不匹配的部份再丟給規則二</li>
+<li>規則二的正規表示式不匹配的部份，再丟給規則三</li>
+<li>依此類推，直到沒有規則可再套用</li>
+<li>所有規則均跑完後，即回傳陣列，回到<code>parseElement()</code>把原本的文字節點替換成新的節點列。</li>
+</ul>
+</li>
+<li>將 <code>parseInt()</code> 改寫為支援中文數字，參閱<code>parseInt.js</code>
+</li>
+<li>關於「多個條號」的處理，參閱<code>LER.js</code>中註解文字「條號比對－－支援多條文」以下</li>
+</ul><h2>
+<a name="links-to-regulations" class="anchor" href="#links-to-regulations"><span class="octicon octicon-link"></span></a>Links to regulations</h2>
+
+<p>將<a href="http://law.moj.gov.tw/">全國法規資料庫</a>中有收錄的（包含「已廢止法規」）均加上連結。其方法為：</p>
+
+<ul>
+<li>將<a href="https://github.com/g0v/laweasyread-data">g0v/laweasyread-data</a>的<code>data/pcode.json</code>改為本專案的<code>pcode.js</code>（就只是灌進一個變數中）</li>
+<li>將名稱中只有中文、沒有標點符號的法規（約九千個）全部以'|'為連接符號，由長至短串成一個字串（共近20萬字），生成一個巨大的正規表示式。</li>
+</ul>
+      </section>
+
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
